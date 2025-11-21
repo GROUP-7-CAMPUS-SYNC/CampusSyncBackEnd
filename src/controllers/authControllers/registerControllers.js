@@ -24,7 +24,7 @@ export const register = async (request, response) => {
         }
 
         // 2. [NEW] Validate Email Domain
-        if (!email.endsWith("@1ustp.edu.ph")) {
+        if (!email.endsWith("@1.ustp.edu.ph")) {
             return response.status(403).json({ message: "USTP email domain is required" });
         }
 
