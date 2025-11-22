@@ -3,6 +3,7 @@ import cors from "cors"
 import bodyParser from "body-parser"
 import "dotenv/config.js"
 import authRoutes from "./routes/authRoutes.js"
+import suggestionGroup from "./routes/suggestionGroupRoutes.js"
 import { connectDB } from "./lib/db.js"
 
 
@@ -13,7 +14,7 @@ app.use(cors())
 app.use(bodyParser.json())
 
 app.use('/api/auth', authRoutes)
-
+app.use('/api/suggestions', suggestionGroup)
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)

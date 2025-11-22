@@ -3,12 +3,10 @@ import User from "../../models/User.js";
 export const verifyUser = async (request, response) => {
     try
     {
-       const userId = request.userId;
-       console.log("user id in the verify controller", userId)
-       const user = await User.findById(userId)
-        .select('-password');
+       const userRegistrationDetails = request.userRegistrationDetails;
+       console.log("user id in the verify controller", userRegistrationDetails)
         
-        if (!user){
+        if (!userRegistrationDetails){
             return response.status(404).json({ message: "User not found for auto login"});
         }
 
@@ -16,13 +14,13 @@ export const verifyUser = async (request, response) => {
             .status(200)
             .json({
                     user: {
-                        _id: user._id,
-                        firstname: user.firstname,
-                        lastname: user.lastname,
-                        course: user.course,
-                        email: user.email,
-                        profileLink: user.profileLink,
-                        role: user.role
+                        _id: userRegistrationDetails._id,
+                        firstname: userRegistrationDetails.firstname,
+                        lastname: userRegistrationDetails.lastname,
+                        course: userRegistrationDetails.course,
+                        email: userRegistrationDetails.email,
+                        profileLink: userRegistrationDetails.profileLink,
+                        role: userRegistrationDetails.role
                     },
                     message: "Token valid, auto login successful"
                 });    
@@ -30,6 +28,6 @@ export const verifyUser = async (request, response) => {
     catch(error)
     {
         console.log("Error in VerifyUser controller", error);
-        return response.status(500).json({ message: "Internal Server Error" });
+        return response.status(500).json({ message: "Internal Server Error (VerifyUser Controller)" });
     }
 }

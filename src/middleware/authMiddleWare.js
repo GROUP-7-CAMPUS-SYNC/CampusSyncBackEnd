@@ -16,8 +16,8 @@ export const protect = async (request, response, next) => {
             
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             console.log(decoded)
-            request.userId = await User.findById(decoded.userId).select("-password")
-
+            request.userRegistrationDetails = await User.findById(decoded.userId).select("-password")
+            console.log(request.userRegistrationDetails)
             next();
         }catch(error)
         {
