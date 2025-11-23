@@ -4,6 +4,7 @@ import bodyParser from "body-parser"
 import "dotenv/config.js"
 import authRoutes from "./routes/authRoutes.js"
 import suggestionGroup from "./routes/suggestionGroupRoutes.js"
+import organizationRoutes from "./routes/organizationRoutes.js"
 import { connectDB } from "./lib/db.js"
 
 
@@ -15,6 +16,8 @@ app.use(bodyParser.json())
 
 app.use('/api/auth', authRoutes)
 app.use('/api/suggestions', suggestionGroup)
+app.use('/api/organizations', organizationRoutes)
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)

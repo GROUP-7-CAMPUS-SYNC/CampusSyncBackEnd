@@ -47,7 +47,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["user", "moderator"], 
         default: "user"
-    }
+    },
+
+    following:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Organization"
+    }],
 },
 {
     timestamps: true
