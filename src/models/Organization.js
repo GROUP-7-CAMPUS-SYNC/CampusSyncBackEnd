@@ -29,12 +29,14 @@ const organizationSchema = new mongoose.Schema({
         default: 0
     },
 
+    // The one who can post on the organization authorized 
     organizationHeadID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
 
+    //The one who approved the organization Head
     moderators: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

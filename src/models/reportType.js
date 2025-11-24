@@ -80,6 +80,9 @@ const lostFoundItemSchema = new mongoose.Schema({
             default: Date.now
         }
     }]
+}, 
+{
+    timestamps: true
 })
 
 const ReportItem = mongoose.model("ReportItem", lostFoundItemSchema);
