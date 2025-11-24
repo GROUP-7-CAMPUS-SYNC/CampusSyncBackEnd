@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js"
 import suggestionGroup from "./routes/suggestionGroupRoutes.js"
 import organizationRoutes from "./routes/organizationRoutes.js"
 import { connectDB } from "./lib/db.js"
+import reportTypeRoutes from "./routes/reportTypeRoutes.js"
 
 
 const app = express()
@@ -17,6 +18,7 @@ app.use(bodyParser.json())
 app.use('/api/auth', authRoutes)
 app.use('/api/suggestions', suggestionGroup)
 app.use('/api/organizations', organizationRoutes)
+app.use('/api/report_types', reportTypeRoutes)
 
 
 app.listen(PORT, () => {
