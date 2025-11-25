@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js"
 import suggestionGroup from "./routes/suggestionGroupRoutes.js"
 import organizationRoutes from "./routes/organizationRoutes.js"
 import academicRoutes from "./routes/academicRoutes.js"
+import eventRoutes from "./routes/eventRoutes.js"
 import { connectDB } from "./lib/db.js"
 import reportTypeRoutes from "./routes/reportTypeRoutes.js"
 
@@ -21,6 +22,7 @@ app.use('/api/suggestions', suggestionGroup)
 app.use('/api/organizations', organizationRoutes)
 app.use('/api/report_types', reportTypeRoutes)
 app.use('/api/academic', academicRoutes)
+app.use('/api/events', eventRoutes)
 
 
 
