@@ -33,3 +33,71 @@ export const getAllOrganization = async (request, response) => {
             .json({ message: "Internal Server Error (Moderator Controllers) [getAllOrganization]" });
     }
 }
+
+export const createOrganization = async (request, response) => {
+    try {
+        // 1. Destructure fields from request body
+        const {
+            organizationName,
+            description,
+            course,
+            organizationHeadID,
+            profileLink // Optional field from request
+        } = request.body;
+        
+        // createdBy is derived from the authenticated user (middleware)
+        const createdBy = request.userRegistrationDetails;
+
+        // 2. Validate Required Fields
+        if (!organizationName || !course || !organizationHeadID || !description) {
+            return response.status(400).json({ message: "Missing required fields: name, course, head, or description." });
+        }
+
+        // 3. Check for Duplicate Organization Name
+        const existingOrg = await Organization.findOne({ organizationName });
+        if (existingOrg) {
+            return response.status(409).json({ message: "Organization name already exists." });
+        }
+
+        // 4. Validate Organization Head (User) & Enforce Role Restrictions
+        const headUser = await User.findById(organizationHeadID);
+        if (!headUser) {
+            return response.status(404).json({ message: "Selected Organization Head not found." });
+        }
+
+        // --- NEW LOGIC: Prevent Moderators from being Heads ---
+        if (headUser.role === 'moderator') {
+            return response.status(403).json({ 
+                message: "Conflict of Interest: A Moderator cannot be assigned as an Organization Head." 
+            });
+        }
+
+        // 5. Determine Profile Link (Use provided or generate default)
+        // Uses organizationName as seed to ensure the same name always gets the same avatar
+        const finalProfileLink = profileLink || `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(organizationName)}`;
+
+        // 6. Create the Organization
+        const newOrganization = new Organization({
+            organizationName,
+            description,
+            course,
+            organizationHeadID,
+            moderators: createdBy._id, // The moderator creating this is the approver
+            profileLink: finalProfileLink, 
+            members: 0       // Default 0 as per schema
+        });
+
+        await newOrganization.save();
+
+        return response.status(201).json({ 
+            message: "Organization created successfully.", 
+            data: newOrganization 
+        });
+
+    } catch (error) {
+        console.error("Error creating organization (Moderator Controllers) [createOrganization]: ", error);
+        return response
+            .status(500)
+            .json({ message: "Internal Server Error (Moderator Controllers) [createOrganization]", error: error.message });
+    }
+}
