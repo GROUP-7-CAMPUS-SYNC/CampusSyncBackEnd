@@ -170,3 +170,47 @@ export const updateOrganizationName = async (request, response) => {
         });
     }
 };
+
+export const updateOrganizationDescription = async (request, response) => {
+    try
+    {
+        const { organizationId, description } = request.body;
+
+        if(!organizationId || !description){
+            return response
+                .status(400)
+                .json({ message: "Organization ID and new Description are required." })
+        }
+
+        const updateOrg = await Organization.findByIdAndUpdate(organizationId,
+            {$set: {description: description}},
+            { new: true, runValidators: true}
+        )
+        .populate('organizationHeadID', 'firstname lastname course email')
+        .populate('moderators', 'firstname lastname email');
+
+        if(!updateOrg){
+            return response
+                .status(404)
+                .json({ message: "Organization not found." })
+        }
+        
+
+        return response
+            .status(200)
+            .json({
+                message: "Organization description updated successfully.",
+                data: updateOrg
+            })
+    }
+    catch(error)
+    {
+        console.error("Error updating organization description (Moderator Controllers) [updateOrganizationDescription]: ", error);
+        return response
+            .status(500)
+            .json({
+                message: "Internal Server Error updating organization description (Moderator Controllers) [updateOrganizationDescription].",
+                error: error.message
+            })
+    }
+}
