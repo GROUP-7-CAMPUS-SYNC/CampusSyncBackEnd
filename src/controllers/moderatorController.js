@@ -214,3 +214,54 @@ export const updateOrganizationDescription = async (request, response) => {
             })
     }
 }
+
+export const changeOrganizationHead = async (request, response) => {
+    try {
+        const { organizationId, newHeadId } = request.body;
+
+        // 1. Validate Input
+        if (!organizationId || !newHeadId) {
+            return response.status(400).json({ message: "Organization ID and New Head ID are required." });
+        }
+
+        // 2. Validate New Head User
+        const newHeadUser = await User.findById(newHeadId);
+        if (!newHeadUser) {
+            return response.status(404).json({ message: "The selected user for Organization Head was not found." });
+        }
+
+        // 3. Enforce Role Restrictions (Separation of Duties)
+        if (newHeadUser.role === 'moderator') {
+            return response.status(403).json({ 
+                message: "Conflict of Interest: A Moderator cannot be assigned as an Organization Head." 
+            });
+        }
+
+        // 4. Atomic Update
+        const updatedOrg = await Organization.findByIdAndUpdate(
+            organizationId,
+            { $set: { organizationHeadID: newHeadId } },
+            { new: true, runValidators: true }
+        )
+        .populate("organizationHeadID", "firstname lastname course email profileLink")
+        .populate("moderators", "firstname lastname email");
+
+        if (!updatedOrg) {
+            return response.status(404).json({ message: "Organization not found." });
+        }
+
+        // Optional: Logic to remove previous head's privileges or notify them could go here.
+
+        return response.status(200).json({
+            message: "Organization Head changed successfully.",
+            data: updatedOrg
+        });
+
+    } catch (error) {
+        console.error("Error changing organization head (Moderator Controllers) [changeOrganizationHead]: ", error);
+        return response.status(500).json({ 
+            message: "Internal Server Error changing organization head.", 
+            error: error.message 
+        });
+    }
+};
