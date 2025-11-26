@@ -9,7 +9,7 @@ import academicRoutes from "./routes/academicRoutes.js"
 import eventRoutes from "./routes/eventRoutes.js"
 import { connectDB } from "./lib/db.js"
 import reportTypeRoutes from "./routes/reportTypeRoutes.js"
-
+import moderatorRoutes from "./routes/moderatorRoutes.js"
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -23,8 +23,7 @@ app.use('/api/organizations', organizationRoutes)
 app.use('/api/report_types', reportTypeRoutes)
 app.use('/api/academic', academicRoutes)
 app.use('/api/events', eventRoutes)
-
-
+app.use('/api/moderator', moderatorRoutes)
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
