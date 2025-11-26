@@ -284,6 +284,15 @@ export const deleteOrganization = async (request, response) => {
             return response.status(404).json({ message: "Organization not found." });
         }
 
+        // 2. CLEANUP: Remove this organization ID from ALL users' 'following' arrays
+        // This finds users where 'following' contains the ID, and pulls it out.
+        await User.updateMany(
+            {following: organizationId}, 
+            { $pull: {
+                following: organizationId
+            }}
+        )
+
         await Organization.findByIdAndDelete(organizationId);
 
         return response.status(200).json({ message: "Organization deleted successfully." });
