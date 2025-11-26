@@ -265,3 +265,32 @@ export const changeOrganizationHead = async (request, response) => {
         });
     }
 };
+
+export const deleteOrganization = async (request, response) => {
+
+    try
+    {
+        const { organizationId } = request.params;
+
+        if(!organizationId){
+            return response
+                .status(400)
+                .json({ message: "Organization ID is required." })
+        }
+
+        // 1. Check existence
+        const organization = await Organization.findById(organizationId);
+        if (!organization) {
+            return response.status(404).json({ message: "Organization not found." });
+        }
+
+        await Organization.findByIdAndDelete(organizationId);
+
+        return response.status(200).json({ message: "Organization deleted successfully." });
+    }
+    catch(error)
+    {
+        console.error("Error deleting organization (Moderator Controllers) [deleteOrganization]: ", error);
+
+    }
+}
