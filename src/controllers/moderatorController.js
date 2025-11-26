@@ -124,3 +124,49 @@ export const getAllUser = async (request, response) => {
             .json({message: "Internal Server Error (Moderator Controllers) [getAllUser]"});
     }
 }
+
+export const updateOrganizationName = async (request, response) => {
+    try {
+        const { organizationId, organizationName } = request.body;
+
+        if (!organizationId || !organizationName) {
+            return response.status(400).json({ message: "Organization ID and new Name are required." });
+        }
+
+        // 1. Duplicate Check (Mandatory Logic)
+        // We must check if the name exists on any document EXCEPT the one we are updating
+        const duplicate = await Organization.findOne({ 
+            organizationName: organizationName,
+            _id: { $ne: organizationId } 
+        });
+
+        if (duplicate) {
+            return response.status(409).json({ message: `Organization name '${organizationName}' already exists.` });
+        }
+
+        // 2. Atomic Update using findByIdAndUpdate
+        const updatedOrg = await Organization.findByIdAndUpdate(
+            organizationId,
+            { $set: { organizationName: organizationName } }, // Explicitly set the new name
+            { new: true, runValidators: true } // Return the modified document
+        )
+        .populate("organizationHeadID", "firstname lastname course email")
+        .populate("moderators", "firstname lastname email");
+
+        if (!updatedOrg) {
+            return response.status(404).json({ message: "Organization not found." });
+        }
+
+        return response.status(200).json({
+            message: "Organization name updated successfully.",
+            data: updatedOrg
+        });
+
+    } catch (error) {
+        console.error("Error updating organization (Moderator Controllers) [updateOrganizationName]: ", error);
+        return response.status(500).json({ 
+            message: "Internal Server Error updating organization.", 
+            error: error.message 
+        });
+    }
+};
