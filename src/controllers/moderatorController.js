@@ -101,3 +101,26 @@ export const createOrganization = async (request, response) => {
             .json({ message: "Internal Server Error (Moderator Controllers) [createOrganization]", error: error.message });
     }
 }
+
+export const getAllUser = async (request, response) => {
+    try
+    {
+        const potentialHeadOrganizationUser = await User.find({ role: { $ne: "moderator" } })
+            .select("firstname lastname email course profileLink role")
+
+        return response
+            .status(200)
+            .json({
+                message: "User fetching successfully",
+                data: potentialHeadOrganizationUser
+            })
+
+    }
+    catch(error)
+    {
+        console.error("Error fetching users (Moderator Controllers) [getAllUser]: ", error);
+        return response 
+            .status(500)
+            .json({message: "Internal Server Error (Moderator Controllers) [getAllUser]"});
+    }
+}
