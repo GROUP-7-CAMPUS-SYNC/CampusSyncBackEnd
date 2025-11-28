@@ -89,7 +89,7 @@ export const createOrganization = async (request, response) => {
 
         await newOrganization.save();
 
-        return response.status(201).json({ 
+        return response.status(200).json({ 
             message: "Organization created successfully.", 
             data: newOrganization 
         });
