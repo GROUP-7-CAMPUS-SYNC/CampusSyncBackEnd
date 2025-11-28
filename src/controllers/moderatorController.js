@@ -1,5 +1,8 @@
 import Organization from "../models/Organization.js";
 import User from "../models/User.js";
+import Academic from "../models/Academic.js";
+import Event from "../models/Event.js";
+
 
 export const getAllOrganization = async (request, response) => {
     const {_id, role} = request.userRegistrationDetails;
@@ -286,13 +289,19 @@ export const deleteOrganization = async (request, response) => {
 
         // 2. CLEANUP: Remove this organization ID from ALL users' 'following' arrays
         // This finds users where 'following' contains the ID, and pulls it out.
-        await User.updateMany(
-            {following: organizationId}, 
-            { $pull: {
-                following: organizationId
-            }}
-        )
 
+        await Promise.all([
+            // Remove from User following
+            User.updateMany(
+                { following: organizationId }, 
+                { $pull: { following: organizationId } }
+            ),
+            // DELETE all associated Academic posts
+            Academic.deleteMany({ organization: organizationId }),
+            // DELETE all associated Event posts
+            Event.deleteMany({ organization: organizationId })
+        ]);
+        
         await Organization.findByIdAndDelete(organizationId);
 
         return response.status(200).json({ message: "Organization deleted successfully." });
