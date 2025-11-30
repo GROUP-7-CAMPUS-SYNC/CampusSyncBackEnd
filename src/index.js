@@ -10,6 +10,7 @@ import eventRoutes from "./routes/eventRoutes.js"
 import { connectDB } from "./lib/db.js"
 import reportTypeRoutes from "./routes/reportTypeRoutes.js"
 import Dashboard from "./routes/homeFeedController.js"
+import UserGetAllPost from "./routes/profileRoutes.js"
 import moderatorRoutes from "./routes/moderatorRoutes.js"
 
 const app = express()
@@ -26,6 +27,7 @@ app.use('/api/academic', academicRoutes)
 app.use('/api/events', eventRoutes)
 app.use('/api/moderator', moderatorRoutes)
 app.use('/api/dashboard', Dashboard)
+app.use('/api/profile', UserGetAllPost)
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
