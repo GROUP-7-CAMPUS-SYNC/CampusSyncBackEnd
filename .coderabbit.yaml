@@ -1,0 +1,46 @@
+# .coderabbit.yaml
+language: "en-US"
+
+# KEEP THIS SHORT (Max 250 chars)
+tone_instructions: "You are a Senior Engineer. Be concise, practical, and focus on modern best practices. Avoid nitpicking."
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "Draft"
+      - "do not merge"
+
+  tools:
+    eslint:
+      enabled: true
+    ruff:
+      enabled: true
+
+  # THE FIX: Use path_instructions for detailed rules (Max 20,000 chars)
+  path_instructions:
+    - path: "**/*.{js,jsx,ts,tsx}"
+      instructions: |
+        Analyze the file content to determine if it is Frontend or Backend, then apply the rules below:
+
+        GLOBAL ARCHITECTURE:
+        - Use ES Modules ("type": "module") strictly. No `require()`.
+
+        IF FRONTEND (React 19 + Vite + Tailwind 4):
+        - React 19: Do NOT flag "experimental" hooks/actions.
+        - Routing: Validate against `react-router-dom` v7 patterns.
+        - Styling: We use Tailwind CSS v4. Configuration is CSS-based; do not look for `tailwind.config.js`.
+        - Icons: Use `lucide-react` or `react-icons` imports.
+        - State: Prefer hooks over Redux.
+        - Type Safety: Strict TypeScript. No `any`.
+
+        IF BACKEND (Express 5 + Mongoose):
+        - Express 5: Async handlers do NOT need try/catch blocks; Express 5 handles rejections automatically.
+        - Database: Mongoose 8.x schemas must be strictly typed.
+        - Auth: Use `await bcrypt.compare`.
+        - Security: Use `dotenv` for secrets.
