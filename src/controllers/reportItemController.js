@@ -67,7 +67,10 @@ export const createReportItem = async (request, response) => {
 export const getAllReportItems = async (request, response) => {
     try
     {
-        const allReportItems = await ReportItem.find();
+        const allReportItems = await ReportItem.find()
+            .sort({ createdAt: -1 })
+            .populate("postedBy", "firstname lastname");
+
         return response
             .status(200)
             .json(allReportItems)
