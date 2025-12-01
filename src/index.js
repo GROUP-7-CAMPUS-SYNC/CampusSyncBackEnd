@@ -12,6 +12,8 @@ import reportTypeRoutes from "./routes/reportTypeRoutes.js"
 import Dashboard from "./routes/homeFeedController.js"
 import UserGetAllPost from "./routes/profileRoutes.js"
 import moderatorRoutes from "./routes/moderatorRoutes.js"
+import uploadRoutes from "./routes/uploadRoutes.js"
+
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -28,6 +30,8 @@ app.use('/api/events', eventRoutes)
 app.use('/api/moderator', moderatorRoutes)
 app.use('/api/dashboard', Dashboard)
 app.use('/api/profile', UserGetAllPost)
+app.use('/api/upload', uploadRoutes)
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
