@@ -67,7 +67,22 @@ export const createReportItem = async (request, response) => {
 export const getAllReportItems = async (request, response) => {
     try
     {
-        const allReportItems = await ReportItem.find()
+        const { search } = request.query;
+
+        let query = {};
+
+        if (search) {
+            query = {
+                $or: [
+                    { itemName: { $regex: search, $options: 'i' } },
+                    { description: { $regex: search, $options: 'i' } },
+                    { locationDetails: { $regex: search, $options: 'i' } },
+                    { reportType: { $regex: search, $options: 'i' } } 
+                ]
+            };
+        }
+
+        const allReportItems = await ReportItem.find(query)
             .sort({ createdAt: -1 })
             .populate("postedBy", "firstname lastname");
 
