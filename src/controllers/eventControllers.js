@@ -99,13 +99,36 @@ export const createPostEvent = async (request, response) => {
 
 export const getAllEventPosts = async (request, response) => {
     try {
-        const post = await Event.find()
+        
+        const { search } = request.query;
+        let query = {};
+
+        if(search)
+        {
+            // If a search term exists, filter by eventName OR location OR course
+            // $regex with option 'i' makes it case-insensitive
+
+            query = {
+                $or: [
+                    { eventName: { $regex: search, $options: 'i' } },
+                    // { location: { $regex: search, $options: 'i' } },
+                    // { course: { $regex: search, $options: 'i' } },
+                    // { openTo: { $regex: search, $options: 'i' } }
+                ]
+            }
+        }
+
+        const post = await Event.find(query)
             .sort({ createdAt: -1 })
             .populate("postedBy", "firstname lastname")
             .populate("organization", "organizationName profileLink");
 
-        return response.status(200).json(post);
+        if(post.length !== 0){
+            return response.status(200).json(post);
 
+        }
+
+        return response.status(404).json({ message: "No posts found" });
     } catch (error) {
         console.error("Error fetching event posts (Event Controllers) [getAllEventPosts]: ", error);
         return response.status(500).json({
