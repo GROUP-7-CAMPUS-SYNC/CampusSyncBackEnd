@@ -13,7 +13,7 @@ import Dashboard from "./routes/homeFeedController.js"
 import UserGetAllPost from "./routes/profileRoutes.js"
 import moderatorRoutes from "./routes/moderatorRoutes.js"
 import uploadRoutes from "./routes/uploadRoutes.js"
-
+import notificationRoutes from "./routes/notificationRoutes.js"
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -31,6 +31,7 @@ app.use('/api/moderator', moderatorRoutes)
 app.use('/api/dashboard', Dashboard)
 app.use('/api/profile', UserGetAllPost)
 app.use('/api/upload', uploadRoutes)
+app.use('/api/notification', notificationRoutes)
 
 
 app.listen(PORT, () => {

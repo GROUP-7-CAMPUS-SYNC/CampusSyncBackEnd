@@ -2,7 +2,7 @@ import Organization from "../models/Organization.js";
 import User from "../models/User.js";
 import Academic from "../models/Academic.js";
 import Event from "../models/Event.js";
-
+import Notification from "../models/Notification.js";
 
 export const getAllOrganization = async (request, response) => {
     const {_id, role} = request.userRegistrationDetails;
@@ -270,15 +270,13 @@ export const changeOrganizationHead = async (request, response) => {
 };
 
 export const deleteOrganization = async (request, response) => {
-
-    try
-    {
+    try {
         const { organizationId } = request.params;
 
-        if(!organizationId){
+        if (!organizationId) {
             return response
                 .status(400)
-                .json({ message: "Organization ID is required." })
+                .json({ message: "Organization ID is required." });
         }
 
         // 1. Check existence
@@ -287,28 +285,37 @@ export const deleteOrganization = async (request, response) => {
             return response.status(404).json({ message: "Organization not found." });
         }
 
-        // 2. CLEANUP: Remove this organization ID from ALL users' 'following' arrays
-        // This finds users where 'following' contains the ID, and pulls it out.
-
+        // 2. CLEANUP: Delete everything associated with this organization
+        // We use Promise.all to execute all these deletions in parallel for speed.
         await Promise.all([
-            // Remove from User following
+            // A. Remove this org from all Users' 'following' lists
             User.updateMany(
-                { following: organizationId }, 
+                { following: organizationId },
                 { $pull: { following: organizationId } }
             ),
-            // DELETE all associated Academic posts
+
+            // B. DELETE all associated Academic posts
             Academic.deleteMany({ organization: organizationId }),
-            // DELETE all associated Event posts
-            Event.deleteMany({ organization: organizationId })
+
+            // C. DELETE all associated Event posts
+            Event.deleteMany({ organization: organizationId }),
+
+            // D. ✅ NEW: DELETE all Notifications from this organization
+            Notification.deleteMany({ organization: organizationId })
         ]);
-        
+
+        // 3. Finally, delete the Organization itself
         await Organization.findByIdAndDelete(organizationId);
 
-        return response.status(200).json({ message: "Organization deleted successfully." });
-    }
-    catch(error)
-    {
-        console.error("Error deleting organization (Moderator Controllers) [deleteOrganization]: ", error);
+        return response.status(200).json({ 
+            message: "Organization and all associated data (posts, notifications) deleted successfully." 
+        });
 
+    } catch (error) {
+        console.error("Error deleting organization (Moderator Controllers) [deleteOrganization]: ", error);
+        return response.status(500).json({
+            message: "Internal Server Error (Moderator Controllers) [deleteOrganization]",
+            error: error.message
+        });
     }
-}
+};

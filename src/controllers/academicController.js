@@ -1,5 +1,6 @@
 import Academic from "../models/Academic.js";
 import Organization from "../models/Organization.js";
+import { notifyOrganizationFollowers } from "../helper/notificationHelper.js";
 
 export const getManagedOrganization = async (request, response) => {
     try
@@ -83,6 +84,14 @@ export const createPostAcademic = async (request, response) => {
 
         // 7. Save to Database
         const savedPost = await newPost.save();
+
+        notifyOrganizationFollowers(
+            organizationId,                // Organization ID
+            user._id,                      // Sender ID
+            savedPost._id,                 // Reference ID (The Academic Post)
+            "Academic",                    // Reference Model Name
+            `New Academic Post: ${title}`  // The Message
+        );
 
         // 8. Return Success
         return response.status(201).json({
