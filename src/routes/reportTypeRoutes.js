@@ -1,12 +1,24 @@
-import express from 'express'
-import { createReportItem, getAllReportItems } from '../controllers/reportItemController.js';
+import express from 'express';
+import { 
+    createReportItem, 
+    getAllReportItems,
+    addCommentReportItem,
+    getCommentsReportItem,
+    editCommentReportItem,
+    deleteCommentReportItem
+} from '../controllers/reportItemController.js';
 import { protect } from '../middleware/authMiddleWare.js';
-
-
 
 const router = express.Router();
 
+// Post Routes
 router.post('/createPost', protect, createReportItem);
 router.get('/getPosts/reportItems', protect, getAllReportItems);
+
+// Comment Routes
+router.post('/:id/comments', protect, addCommentReportItem);           // Add
+router.get('/:id/comments', protect, getCommentsReportItem);           // Read
+router.put('/:id/comments/:commentId', protect, editCommentReportItem); // Edit
+router.delete('/:id/comments/:commentId', protect, deleteCommentReportItem); // Delete
 
 export default router;
