@@ -125,7 +125,8 @@ export const getAllAcademicPosts = async (request, response) => {
         const posts = await Academic.find(query)
             .sort({ createdAt: -1 }) // Descending order
             .populate("postedBy", "firstname lastname") // Get author name
-            .populate("organization", "organizationName profileLink"); // Get org details
+            .populate("organization", "organizationName profileLink") // Get org details
+            .populate("comments.user", "firstname lastname profileLink");
 
         return response.status(200).json(posts);
 
@@ -135,5 +136,111 @@ export const getAllAcademicPosts = async (request, response) => {
             message: "Internal Server Error (Academic Controllers) [getAllAcademicPosts]",
             error: error.message
         });
+    }
+};
+
+// POST: Add a comment
+export const addCommentAcademic = async (request, response) => {
+    try {
+        const { id } = request.params; // Post ID
+        const { text } = request.body;
+        const userId = request.userRegistrationDetails._id;
+
+        if (!text) return response.status(400).json({ message: "Comment text is required" });
+
+        const updatedPost = await Academic.findByIdAndUpdate(
+            id,
+            { 
+                $push: { 
+                    comments: { 
+                        user: userId, 
+                        text: text 
+                    } 
+                } 
+            },
+            { new: true } // Return updated doc
+        ).populate("comments.user", "firstname lastname profileLink");
+
+        if (!updatedPost) return response.status(404).json({ message: "Post not found" });
+
+        return response.status(200).json(updatedPost.comments);
+    } catch (error) {
+        console.error("Error adding academic comment:", error);
+        return response.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// PUT: Edit a comment
+export const editCommentAcademic = async (request, response) => {
+    try {
+        const { id, commentId } = request.params;
+        const { text } = request.body;
+        const userId = request.userRegistrationDetails._id;
+
+        const post = await Academic.findById(id);
+        if (!post) return response.status(404).json({ message: "Post not found" });
+
+        // Find the comment
+        const comment = post.comments.id(commentId);
+        if (!comment) return response.status(404).json({ message: "Comment not found" });
+
+        // Check ownership
+        if (comment.user.toString() !== userId.toString()) {
+            return response.status(403).json({ message: "Unauthorized to edit this comment" });
+        }
+
+        comment.text = text;
+        await post.save();
+
+        // Re-fetch to populate user details for frontend
+        const updatedPost = await Academic.findById(id).populate("comments.user", "firstname lastname profileLink");
+
+        return response.status(200).json(updatedPost.comments);
+    } catch (error) {
+        console.error("Error editing academic comment:", error);
+        return response.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// DELETE: Delete a comment
+export const deleteCommentAcademic = async (request, response) => {
+    try {
+        const { id, commentId } = request.params;
+        const userId = request.userRegistrationDetails._id;
+
+        const post = await Academic.findById(id);
+        if (!post) return response.status(404).json({ message: "Post not found" });
+
+        const comment = post.comments.id(commentId);
+        if (!comment) return response.status(404).json({ message: "Comment not found" });
+
+        // Check ownership (Optional: Allow post owner or moderators to delete too)
+        if (comment.user.toString() !== userId.toString()) {
+            return response.status(403).json({ message: "Unauthorized to delete this comment" });
+        }
+
+        // Use pull to remove
+        post.comments.pull(commentId);
+        await post.save();
+
+        return response.status(200).json({ message: "Comment deleted successfully", comments: post.comments });
+    } catch (error) {
+        console.error("Error deleting academic comment:", error);
+        return response.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// GET: Get all comments for a post
+export const getCommentsAcademic = async (request, response) => {
+    try {
+        const { id } = request.params;
+        const post = await Academic.findById(id).populate("comments.user", "firstname lastname profileLink");
+        
+        if (!post) return response.status(404).json({ message: "Post not found" });
+
+        return response.status(200).json(post.comments);
+    } catch (error) {
+        console.error("Error fetching academic comments:", error);
+        return response.status(500).json({ message: "Internal Server Error" });
     }
 };

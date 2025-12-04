@@ -11,18 +11,23 @@ export const getUserPosts = async (request, response) => {
         const [reports, events, academics] = await Promise.all([
             ReportItem.find({ postedBy: userId })
                 .populate("postedBy", "firstname lastname profileLink")
+                .populate("comments.user", "firstname lastname profileLink")
                 .sort({ createdAt: -1 })
                 .lean(),
 
             Event.find({ postedBy: userId })
                 .populate("postedBy", "firstname lastname")
                 .populate("organization", "organizationName profileLink")
+                .populate("comments.user", "firstname lastname profileLink")
+
                 .sort({ createdAt: -1 })
                 .lean(),
 
             Academic.find({ postedBy: userId })
                 .populate("postedBy", "firstname lastname")
                 .populate("organization", "organizationName profileLink")
+                .populate("comments.user", "firstname lastname profileLink")
+
                 .sort({ createdAt: -1 })
                 .lean()
         ]);

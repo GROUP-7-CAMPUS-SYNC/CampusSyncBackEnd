@@ -27,6 +27,7 @@ export const performGlobalSearch = async (request, response) => {
             .sort({ createdAt: -1 })
             .populate("postedBy", "firstname lastname profileLink")
             .populate("organization", "organizationName profileLink")
+            .populate("comments.user", "firstname lastname profileLink")
             .lean(), 
 
             // 2. Search Academic
@@ -39,6 +40,8 @@ export const performGlobalSearch = async (request, response) => {
             .sort({ createdAt: -1 })
             .populate("postedBy", "firstname lastname profileLink")
             .populate("organization", "organizationName profileLink")
+            .populate("comments.user", "firstname lastname profileLink")
+
             .lean(),
 
             // 3. Search Report Items (Lost & Found)
@@ -51,6 +54,7 @@ export const performGlobalSearch = async (request, response) => {
             })
             .sort({ createdAt: -1 })
             .populate("postedBy", "firstname lastname profileLink")
+            .populate("comments.user", "firstname lastname profileLink")
             .lean()
         ]);
 
