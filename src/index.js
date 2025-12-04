@@ -16,6 +16,7 @@ import uploadRoutes from "./routes/uploadRoutes.js"
 import notificationRoutes from "./routes/notificationRoutes.js"
 import searchHistoryRoutes from "./routes/searchBarRoutes.js"
 import globalSearchRoutes from "./routes/globalSearchRoutes.js"
+import savedPostRoutes from "./routes/savedPostRoutes.js"
 
 
 const app = express()
@@ -37,6 +38,8 @@ app.use('/api/upload', uploadRoutes)
 app.use('/api/notification', notificationRoutes)
 app.use('/api/recentSearch', searchHistoryRoutes)
 app.use('/api/search', globalSearchRoutes)
+app.use('/api/saved', savedPostRoutes)
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
