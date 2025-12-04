@@ -110,8 +110,19 @@ export const createPostAcademic = async (request, response) => {
 
 export const getAllAcademicPosts = async (request, response) => {
     try {
+
+        const { search } = request.query;
+        let query = {};
+
+        if (search) {
+            query = {
+                $or: [
+                    { title: { $regex: search, $options: 'i' } },
+                    { content: { $regex: search, $options: 'i' }}                ]
+            }
+        }
         // Fetch all posts, sorted by newest first
-        const posts = await Academic.find()
+        const posts = await Academic.find(query)
             .sort({ createdAt: -1 }) // Descending order
             .populate("postedBy", "firstname lastname") // Get author name
             .populate("organization", "organizationName profileLink"); // Get org details

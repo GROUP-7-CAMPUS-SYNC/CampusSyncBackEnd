@@ -84,7 +84,7 @@ export const getAllReportItems = async (request, response) => {
 
         const allReportItems = await ReportItem.find(query)
             .sort({ createdAt: -1 })
-            .populate("postedBy", "firstname lastname");
+            .populate("postedBy", "firstname lastname profileLink");
 
         return response
             .status(200)

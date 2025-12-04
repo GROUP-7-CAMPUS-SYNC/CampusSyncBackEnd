@@ -10,7 +10,7 @@ export const getUserPosts = async (request, response) => {
         // We use .lean() for performance and to enable property injection
         const [reports, events, academics] = await Promise.all([
             ReportItem.find({ postedBy: userId })
-                .populate("postedBy", "firstname lastname")
+                .populate("postedBy", "firstname lastname profileLink")
                 .sort({ createdAt: -1 })
                 .lean(),
 
