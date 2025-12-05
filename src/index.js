@@ -17,6 +17,7 @@ import notificationRoutes from "./routes/notificationRoutes.js"
 import searchHistoryRoutes from "./routes/searchBarRoutes.js"
 import globalSearchRoutes from "./routes/globalSearchRoutes.js"
 import savedPostRoutes from "./routes/savedPostRoutes.js"
+import setupEventReminders from "./helper/cronScheduler.js"
 
 
 const app = express()
@@ -39,6 +40,7 @@ app.use('/api/notification', notificationRoutes)
 app.use('/api/recentSearch', searchHistoryRoutes)
 app.use('/api/search', globalSearchRoutes)
 app.use('/api/saved', savedPostRoutes)
+setupEventReminders()
 
 
 app.listen(PORT, () => {
