@@ -1,6 +1,7 @@
 import Event from "../models/Event.js";
 import Organization from "../models/Organization.js";
 import { notifyOrganizationFollowers } from "../helper/notificationHelper.js"; 
+import EventSubscriber from "../models/EventSubscriber.js";
 
 export const getManagedOrganization = async (request, response) => {
     try {
@@ -73,7 +74,7 @@ export const createPostEvent = async (request, response) => {
 
         const savePost = await newPost.save();
 
-        // ✅ TRIGGER NOTIFICATION (Fire and Forget)
+        // TRIGGER NOTIFICATION (Fire and Forget)
         // We do not await this, so the UI updates immediately for the user.
         notifyOrganizationFollowers(
             organizationId,                // Organization ID
@@ -225,3 +226,80 @@ export const getCommentsEvent = async (request, response) => {
         return response.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+export const toggleNotifyEvent = async (request, response) => {
+    try
+    {
+        const { id } = request.params;
+        const userId = request.userRegistrationDetails._id;
+
+        // 1. Verify Event Exists
+        const eventExist = await Event.findById(id);
+        if(!eventExist){
+            return response.status(404).json({ message: "Event not found" });
+        }
+
+        // 2. Check if the user is ALREADY subscribed in the separate table
+        const existingSubscription = await EventSubscriber.findOne({
+            event: id,
+            user: userId
+        });
+
+        if(existingSubscription)
+        {
+            // CASE: User is already subscribed -> UNSUBSCRIBE (Delete the record)
+            await EventSubscriber.findByIdAndDelete(existingSubscription._id);
+            return response
+                .status(200)
+                .json({
+                    message: "Reminder removed",
+                    isSubscribed: false                
+                })
+        }
+        else
+        {
+            // CASE: User is NOT subscribed -> SUBSCRIBE
+
+            await EventSubscriber.create({
+                event: id,
+                user: userId
+            });
+            
+            return response.status(200).json({ 
+                message: "Reminder set! You will be notified 1 hour before the event.", 
+                isSubscribed: true 
+            });
+        }
+    }
+    catch(error)
+    {
+        console.error("Error toggling notify (Event Controllers): ", error);
+        return response.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+export const getEventSubscribers = async (request, response) => {
+    try
+    {
+        const { id } = request.params;
+        const userId = request.userRegistrationDetails._id;
+
+        const subscription = await EventSubscriber.findOne({
+            event: id,
+            user: userId
+        });
+
+        const isSubscribed = subscription !== null;
+
+        return response
+            .status(200)
+            .json({
+                isSubscribed : isSubscribed
+            })
+    }
+    catch(error)
+    {
+        console.error("Error getting event subscribers (Event Controllers) [getEventSubscribers]: ", error);
+        return response.status(500).json({ message: "Internal Server Error" });
+    }
+}

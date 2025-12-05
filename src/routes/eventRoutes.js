@@ -6,7 +6,9 @@ import {
     addCommentEvent,
     getCommentsEvent,
     editCommentEvent,
-    deleteCommentEvent
+    deleteCommentEvent,
+    toggleNotifyEvent,
+    getEventSubscribers
 } from "../controllers/eventControllers.js";
 import { protect } from "../middleware/authMiddleWare.js";
 
@@ -22,5 +24,9 @@ router.post('/:id/comments', protect, addCommentEvent);           // Add
 router.get('/:id/comments', protect, getCommentsEvent);           // Read
 router.put('/:id/comments/:commentId', protect, editCommentEvent); // Edit
 router.delete('/:id/comments/:commentId', protect, deleteCommentEvent); // Delete
+
+// Toggle Notify Me Routes
+router.put('/toggle_notify/:id', protect, toggleNotifyEvent);
+router.get('/get_notify_status/:id', protect, getEventSubscribers);
 
 export default router;
