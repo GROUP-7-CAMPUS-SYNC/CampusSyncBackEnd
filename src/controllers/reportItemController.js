@@ -65,14 +65,14 @@ export const createReportItem = async (request, response) => {
 }
 
 export const getAllReportItems = async (request, response) => {
-    try
-    {
+    try {
         const { search } = request.query;
+        // 1. Get current User ID
+        const currentUserId = request.userRegistrationDetails._id.toString();
 
         let query = {};
-
         if (search) {
-            query = {
+             query = {
                 $or: [
                     { itemName: { $regex: search, $options: 'i' } },
                     { description: { $regex: search, $options: 'i' } },
@@ -82,24 +82,32 @@ export const getAllReportItems = async (request, response) => {
             };
         }
 
+        // 2. Fetch data (use .lean() for performance)
         const allReportItems = await ReportItem.find(query)
             .sort({ createdAt: -1 })
             .populate("postedBy", "firstname lastname profileLink")
-            .populate("comments.user", "firstname lastname profileLink");
-        return response
-            .status(200)
-            .json(allReportItems)
+            .populate("comments.user", "firstname lastname profileLink")
+            .populate("witnesses.user", "firstname lastname profileLink") 
+            .lean(); 
 
-    
-    }catch(error)
-    {
-        console.error("Error getting all report items (ReportItem Controllers) [getAllReportItems]: ", error);
-        return response
-            .status(500)
-            .json({
-                message: "Internal Server Error (ReportItem Controllers) [getAllReportItems]",
-                error: error.message
-            })
+        // 3. Inject 'isWitnessed' boolean
+        const reportsWithStatus = allReportItems.map((report) => {
+            const isWitnessed = report.witnesses && report.witnesses.some(
+                (witness) => witness.user.toString() === currentUserId
+            );
+
+            return {
+                ...report,
+                isWitnessed, 
+                witnessCount: report.witnesses ? report.witnesses.length : 0
+            };
+        });
+
+        return response.status(200).json(reportsWithStatus);
+
+    } catch (error) {
+        console.error("Error getting all report items: ", error);
+        return response.status(500).json({ message: "Server Error", error: error.message });
     }
 }
 
@@ -187,5 +195,98 @@ export const getCommentsReportItem = async (request, response) => {
     } catch (error) {
         console.error("Error fetching report comments:", error);
         return response.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const addWitness = async (request, response) => {
+    try {
+        const { id } = request.params;
+        const userId = request.userRegistrationDetails._id;
+
+        const report = await ReportItem.findById(id);
+
+        if (!report) {
+            return response.status(404).json({ message: "Report item not found." });
+        }
+
+        // Check if user is already a witness
+        const isAlreadyWitness = report.witnesses.some(
+            (witness) => witness.user.toString() === userId.toString()
+        );
+
+        if (isAlreadyWitness) {
+            return response.status(400).json({ 
+                message: "Action cannot be undone. You have already witnessed this item." 
+            });
+        }
+
+        // Add Witness
+        report.witnesses.push({ user: userId });
+        await report.save();
+
+        return response.status(200).json({ 
+            message: "Witness added successfully.", 
+            witnesses: report.witnesses 
+        });
+
+    } catch (error) {
+        console.error("Error adding witness (ReportItem Controllers) [addWitness]: ", error);
+        return response.status(500).json({
+            message: "Internal Server Error (ReportItem Controllers) [addWitness]",
+            error: error.message
+        });
+    }
+}
+
+export const isUserIsWitness = async (request, response) => {
+    try {
+        const { id } = request.params;
+        
+        // 1. Get User ID from the authenticated token
+        // Ensure your auth middleware names this 'userRegistrationDetails'
+        const userId = request.userRegistrationDetails._id; 
+
+        // 2. Find the Report
+        const report = await ReportItem.findById(id);
+
+        if (!report) {
+            return response.status(404).json({ message: "Report item not found." });
+        }
+
+        // 3. Compare User ID with Witnesses Array
+        const isAlreadyWitness = report.witnesses.some(
+            (witness) => witness.user.toString() === userId.toString()
+        );
+
+        // 4. Return Boolean Result
+        return response.status(200).json({ isWitness: isAlreadyWitness });
+
+    } catch(error) {
+        console.error("Error checking witness status:", error);
+        return response.status(500).json({ message: "Server Error" });
+    }
+}
+
+export const getWitnessList = async (request, response) => {
+    try {
+        const { id } = request.params;
+
+        // Find report, but ONLY select the witnesses field and populate the user details inside it
+        const report = await ReportItem.findById(id)
+            .select("witnesses") // Optimization: Don't fetch the whole report, just witnesses
+            .populate({
+                path: "witnesses.user",
+                select: "firstname lastname profileLink" // Only get necessary user fields
+            });
+
+        if (!report) {
+            return response.status(404).json({ message: "Report not found" });
+        }
+
+        return response.status(200).json(report.witnesses);
+
+    } catch (error) {
+        console.error("Error fetching witness list:", error);
+        return response.status(500).json({ message: "Server Error" });
     }
 };

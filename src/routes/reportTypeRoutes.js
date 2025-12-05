@@ -5,7 +5,10 @@ import {
     addCommentReportItem,
     getCommentsReportItem,
     editCommentReportItem,
-    deleteCommentReportItem
+    deleteCommentReportItem,
+    addWitness,
+    isUserIsWitness,
+    getWitnessList
 } from '../controllers/reportItemController.js';
 import { protect } from '../middleware/authMiddleWare.js';
 
@@ -20,5 +23,10 @@ router.post('/:id/comments', protect, addCommentReportItem);           // Add
 router.get('/:id/comments', protect, getCommentsReportItem);           // Read
 router.put('/:id/comments/:commentId', protect, editCommentReportItem); // Edit
 router.delete('/:id/comments/:commentId', protect, deleteCommentReportItem); // Delete
+
+// Witness Routes
+router.post('/:id/witnesses', protect, addWitness);
+router.get('/:id/witnesses', protect, isUserIsWitness);
+router.get('/:id/witness-list', protect, getWitnessList); 
 
 export default router;
