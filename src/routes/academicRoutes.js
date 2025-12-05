@@ -19,8 +19,5 @@ router.get('/getPosts/academic', protect, getAllAcademicPosts);
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentAcademic);           // Add
-router.get('/:id/comments', protect, getCommentsAcademic);           // Read
-router.put('/:id/comments/:commentId', protect, editCommentAcademic); // Edit
-router.delete('/:id/comments/:commentId', protect, deleteCommentAcademic); // Delete
 
 export default router;

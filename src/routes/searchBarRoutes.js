@@ -1,5 +1,5 @@
 import express from "express";
-import { logSearchInteraction, getRecentSearches, removeSearchHistoryItem } from "../controllers/searchBarControllers.js";
+import { logSearchInteraction, getRecentSearches } from "../controllers/searchBarControllers.js";
 import { protect } from "../middleware/authMiddleWare.js";
 
 const router = express.Router();
@@ -11,7 +11,5 @@ router.post("/log", protect, logSearchInteraction);
 // Usage: /api/search/recent?context=global  OR  /api/search/recent?context=event
 router.get("/recent", protect, getRecentSearches);
 
-// DELETE: Remove single item
-router.delete("/:historyId", protect, removeSearchHistoryItem);
 
 export default router;
