@@ -87,7 +87,6 @@ export const getAllReportItems = async (request, response) => {
             .sort({ createdAt: -1 })
             .populate("postedBy", "firstname lastname profileLink")
             .populate("comments.user", "firstname lastname profileLink")
-            .populate("witnesses.user", "firstname lastname profileLink") 
             .lean(); 
 
         // 3. Inject 'isWitnessed' boolean
@@ -207,6 +206,12 @@ export const addWitness = async (request, response) => {
 
         if (!report) {
             return response.status(404).json({ message: "Report item not found." });
+        }
+
+        if (report.postedBy.toString() === userId.toString()) {
+            return response.status(400).json({ 
+                message: "You cannot witness your own report." 
+            });
         }
 
         // Check if user is already a witness
