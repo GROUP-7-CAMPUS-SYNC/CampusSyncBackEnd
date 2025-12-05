@@ -228,51 +228,51 @@ export const getCommentsEvent = async (request, response) => {
 };
 
 export const toggleNotifyEvent = async (request, response) => {
-    try
-    {
+    try {
         const { id } = request.params;
         const userId = request.userRegistrationDetails._id;
 
         // 1. Verify Event Exists
         const eventExist = await Event.findById(id);
-        if(!eventExist){
+        if (!eventExist) {
             return response.status(404).json({ message: "Event not found" });
         }
 
-        // 2. Check if the user is ALREADY subscribed in the separate table
+        // [NEW LOGIC] Check if event has already started
+        const currentTime = new Date();
+        const eventStartTime = new Date(eventExist.startDate);
+
+        if (currentTime >= eventStartTime) {
+            return response.status(400).json({ 
+                message: "Cannot set reminder: This event has already started or ended." 
+            });
+        }
+
+        // 2. Check if the user is ALREADY subscribed
         const existingSubscription = await EventSubscriber.findOne({
             event: id,
             user: userId
         });
 
-        if(existingSubscription)
-        {
-            // CASE: User is already subscribed -> UNSUBSCRIBE (Delete the record)
+        if (existingSubscription) {
+            // UNSUBSCRIBE
             await EventSubscriber.findByIdAndDelete(existingSubscription._id);
-            return response
-                .status(200)
-                .json({
-                    message: "Reminder removed",
-                    isSubscribed: false                
-                })
-        }
-        else
-        {
-            // CASE: User is NOT subscribed -> SUBSCRIBE
-
+            return response.status(200).json({
+                message: "Reminder removed",
+                isSubscribed: false
+            });
+        } else {
+            // SUBSCRIBE
             await EventSubscriber.create({
                 event: id,
                 user: userId
             });
-            
             return response.status(200).json({ 
                 message: "Reminder set! You will be notified 1 hour before the event.", 
                 isSubscribed: true 
             });
         }
-    }
-    catch(error)
-    {
+    } catch (error) {
         console.error("Error toggling notify (Event Controllers): ", error);
         return response.status(500).json({ message: "Internal Server Error" });
     }
