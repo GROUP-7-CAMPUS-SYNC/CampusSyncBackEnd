@@ -4,9 +4,6 @@ import {
     createPostEvent, 
     getAllEventPosts,
     addCommentEvent,
-    getCommentsEvent,
-    editCommentEvent,
-    deleteCommentEvent,
     toggleNotifyEvent,
     getEventSubscribers
 } from "../controllers/eventControllers.js";
@@ -21,9 +18,7 @@ router.get('/getPosts/event', protect, getAllEventPosts);
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentEvent);           // Add
-router.get('/:id/comments', protect, getCommentsEvent);           // Read
-router.put('/:id/comments/:commentId', protect, editCommentEvent); // Edit
-router.delete('/:id/comments/:commentId', protect, deleteCommentEvent); // Delete
+
 
 // Toggle Notify Me Routes
 router.put('/toggle_notify/:id', protect, toggleNotifyEvent);

@@ -3,9 +3,6 @@ import {
     createReportItem, 
     getAllReportItems,
     addCommentReportItem,
-    getCommentsReportItem,
-    editCommentReportItem,
-    deleteCommentReportItem,
     addWitness,
     isUserIsWitness,
     getWitnessList
@@ -20,9 +17,8 @@ router.get('/getPosts/reportItems', protect, getAllReportItems);
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentReportItem);           // Add
-router.get('/:id/comments', protect, getCommentsReportItem);           // Read
-router.put('/:id/comments/:commentId', protect, editCommentReportItem); // Edit
-router.delete('/:id/comments/:commentId', protect, deleteCommentReportItem); // Delete
+// router.get('/:id/comments', protect, getCommentsReportItem);           // Read
+
 
 // Witness Routes
 router.post('/:id/witnesses', protect, addWitness);

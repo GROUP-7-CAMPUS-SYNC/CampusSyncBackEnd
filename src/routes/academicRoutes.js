@@ -3,10 +3,7 @@ import {
     getManagedOrganization, 
     createPostAcademic, 
     getAllAcademicPosts,
-    addCommentAcademic,
-    getCommentsAcademic,
-    editCommentAcademic,
-    deleteCommentAcademic
+    addCommentAcademic
 } from "../controllers/academicController.js";
 import { protect } from "../middleware/authMiddleWare.js";
 
@@ -19,8 +16,5 @@ router.get('/getPosts/academic', protect, getAllAcademicPosts);
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentAcademic);           // Add
-router.get('/:id/comments', protect, getCommentsAcademic);           // Read
-router.put('/:id/comments/:commentId', protect, editCommentAcademic); // Edit
-router.delete('/:id/comments/:commentId', protect, deleteCommentAcademic); // Delete
 
 export default router;

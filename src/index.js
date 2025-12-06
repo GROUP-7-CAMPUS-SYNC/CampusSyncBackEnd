@@ -3,7 +3,6 @@ import cors from "cors"
 import bodyParser from "body-parser"
 import "dotenv/config.js"
 import authRoutes from "./routes/authRoutes.js"
-import suggestionGroup from "./routes/suggestionGroupRoutes.js"
 import organizationRoutes from "./routes/organizationRoutes.js"
 import academicRoutes from "./routes/academicRoutes.js"
 import eventRoutes from "./routes/eventRoutes.js"
@@ -27,7 +26,6 @@ app.use(cors())
 app.use(bodyParser.json())
 
 app.use('/api/auth', authRoutes)
-app.use('/api/suggestions', suggestionGroup)
 app.use('/api/organizations', organizationRoutes)
 app.use('/api/report_types', reportTypeRoutes)
 app.use('/api/academic', academicRoutes)
