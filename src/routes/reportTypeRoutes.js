@@ -3,9 +3,6 @@ import {
     createReportItem, 
     getAllReportItems,
     addCommentReportItem,
-    getCommentsReportItem,
-    editCommentReportItem,
-    deleteCommentReportItem,
     addWitness,
     isUserIsWitness,
     getWitnessList

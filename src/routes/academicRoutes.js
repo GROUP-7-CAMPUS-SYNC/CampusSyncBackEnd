@@ -3,10 +3,7 @@ import {
     getManagedOrganization, 
     createPostAcademic, 
     getAllAcademicPosts,
-    addCommentAcademic,
-    getCommentsAcademic,
-    editCommentAcademic,
-    deleteCommentAcademic
+    addCommentAcademic
 } from "../controllers/academicController.js";
 import { protect } from "../middleware/authMiddleWare.js";
 

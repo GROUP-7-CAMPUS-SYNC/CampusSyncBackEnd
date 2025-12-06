@@ -4,9 +4,6 @@ import {
     createPostEvent, 
     getAllEventPosts,
     addCommentEvent,
-    getCommentsEvent,
-    editCommentEvent,
-    deleteCommentEvent,
     toggleNotifyEvent,
     getEventSubscribers
 } from "../controllers/eventControllers.js";

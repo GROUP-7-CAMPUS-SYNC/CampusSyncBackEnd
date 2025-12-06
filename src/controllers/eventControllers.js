@@ -163,116 +163,52 @@ export const addCommentEvent = async (request, response) => {
     }
 };
 
-export const editCommentEvent = async (request, response) => {
-    try {
-        const { id, commentId } = request.params;
-        const { text } = request.body;
-        const userId = request.userRegistrationDetails._id;
-
-        const post = await Event.findById(id);
-        if (!post) return response.status(404).json({ message: "Event not found" });
-
-        const comment = post.comments.id(commentId);
-        if (!comment) return response.status(404).json({ message: "Comment not found" });
-
-        if (comment.user.toString() !== userId.toString()) {
-            return response.status(403).json({ message: "Unauthorized" });
-        }
-
-        comment.text = text;
-        await post.save();
-
-        const updatedPost = await Event.findById(id).populate("comments.user", "firstname lastname profileLink");
-        return response.status(200).json(updatedPost.comments);
-    } catch (error) {
-        console.error("Error editing event comment:", error);
-        return response.status(500).json({ message: "Internal Server Error" });
-    }
-};
-
-export const deleteCommentEvent = async (request, response) => {
-    try {
-        const { id, commentId } = request.params;
-        const userId = request.userRegistrationDetails._id;
-
-        const post = await Event.findById(id);
-        if (!post) return response.status(404).json({ message: "Event not found" });
-
-        const comment = post.comments.id(commentId);
-        if (!comment) return response.status(404).json({ message: "Comment not found" });
-
-        if (comment.user.toString() !== userId.toString()) {
-            return response.status(403).json({ message: "Unauthorized" });
-        }
-
-        post.comments.pull(commentId);
-        await post.save();
-
-        return response.status(200).json({ message: "Comment deleted", comments: post.comments });
-    } catch (error) {
-        console.error("Error deleting event comment:", error);
-        return response.status(500).json({ message: "Internal Server Error" });
-    }
-};
-
-export const getCommentsEvent = async (request, response) => {
-    try {
-        const { id } = request.params;
-        const post = await Event.findById(id).populate("comments.user", "firstname lastname profileLink");
-        if (!post) return response.status(404).json({ message: "Event not found" });
-        return response.status(200).json(post.comments);
-    } catch (error) {
-        console.error("Error fetching event comments:", error);
-        return response.status(500).json({ message: "Internal Server Error" });
-    }
-};
-
 export const toggleNotifyEvent = async (request, response) => {
-    try
-    {
+    try {
         const { id } = request.params;
         const userId = request.userRegistrationDetails._id;
 
         // 1. Verify Event Exists
         const eventExist = await Event.findById(id);
-        if(!eventExist){
+        if (!eventExist) {
             return response.status(404).json({ message: "Event not found" });
         }
 
-        // 2. Check if the user is ALREADY subscribed in the separate table
+        // [NEW LOGIC] Check if event has already started
+        const currentTime = new Date();
+        const eventStartTime = new Date(eventExist.startDate);
+
+        if (currentTime >= eventStartTime) {
+            return response.status(400).json({ 
+                message: "Cannot set reminder: This event has already started or ended." 
+            });
+        }
+
+        // 2. Check if the user is ALREADY subscribed
         const existingSubscription = await EventSubscriber.findOne({
             event: id,
             user: userId
         });
 
-        if(existingSubscription)
-        {
-            // CASE: User is already subscribed -> UNSUBSCRIBE (Delete the record)
+        if (existingSubscription) {
+            // UNSUBSCRIBE
             await EventSubscriber.findByIdAndDelete(existingSubscription._id);
-            return response
-                .status(200)
-                .json({
-                    message: "Reminder removed",
-                    isSubscribed: false                
-                })
-        }
-        else
-        {
-            // CASE: User is NOT subscribed -> SUBSCRIBE
-
+            return response.status(200).json({
+                message: "Reminder removed",
+                isSubscribed: false
+            });
+        } else {
+            // SUBSCRIBE
             await EventSubscriber.create({
                 event: id,
                 user: userId
             });
-            
             return response.status(200).json({ 
                 message: "Reminder set! You will be notified 1 hour before the event.", 
                 isSubscribed: true 
             });
         }
-    }
-    catch(error)
-    {
+    } catch (error) {
         console.error("Error toggling notify (Event Controllers): ", error);
         return response.status(500).json({ message: "Internal Server Error" });
     }
