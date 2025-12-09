@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import Academic from "../models/Academic.js";
 import Event from "../models/Event.js";
 import Notification from "../models/Notification.js";
-
+import SavedItem from "../models/SavedItem.js"; 
 export const getAllOrganization = async (request, response) => {
     const {_id, role} = request.userRegistrationDetails;
     
@@ -301,7 +301,14 @@ export const deleteOrganization = async (request, response) => {
             Event.deleteMany({ organization: organizationId }),
 
             // D. ✅ NEW: DELETE all Notifications from this organization
-            Notification.deleteMany({ organization: organizationId })
+            Notification.deleteMany({ organization: organizationId }),
+
+            SavedItem.deleteMany({ 
+                $or: [
+                    { post: { $in: orgEventIds }, postModel: "Event" },
+                    { post: { $in: orgAcademicIds }, postModel: "Academic" }
+                ]
+            })
         ]);
 
         // 3. Finally, delete the Organization itself
