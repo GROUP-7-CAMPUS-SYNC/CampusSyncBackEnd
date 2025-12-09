@@ -1,6 +1,8 @@
 import Academic from "../models/Academic.js";
 import Organization from "../models/Organization.js";
 import { notifyOrganizationFollowers } from "../helper/notificationHelper.js";
+import Notification from "../models/Notification.js";
+import SavedItem from "../models/SavedItem.js";
 
 export const getManagedOrganization = async (request, response) => {
     try
@@ -166,6 +168,56 @@ export const addCommentAcademic = async (request, response) => {
         return response.status(200).json(updatedPost.comments);
     } catch (error) {
         console.error("Error adding academic comment:", error);
+        return response.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const deleteAcademicPost = async (request, response) => {
+    try {
+        const { id } = request.params;
+        const userId = request.userRegistrationDetails._id;
+
+        // 1. Find the Post
+        const post = await Academic.findById(id);
+
+        if (!post) {
+            return response.status(404).json({ message: "Academic post not found." });
+        }
+
+        // 2. Authorization Check: Is the user the Organization Head?
+        const organization = await Organization.findById(post.organization);
+
+        if (!organization) {
+            return response.status(404).json({ message: "Organization record not found." });
+        }
+
+        if (organization.organizationHeadID.toString() !== userId.toString()) {
+            return response.status(403).json({ 
+                message: "Unauthorized. Only the Organization Head can delete this post." 
+            });
+        }
+
+        // 3. Cascade Delete: Remove Notifications related to this post
+        await Notification.deleteMany({ 
+            referenceId: id,
+            referenceModel: "Academic"
+        });
+
+        // 4. Cascade Delete: Remove Saved Items
+        await SavedItem.deleteMany({ 
+            post: id, 
+            postModel: "Academic" 
+        });
+
+        // 5. Delete the Academic Post itself
+        await Academic.findByIdAndDelete(id);
+
+        return response.status(200).json({ 
+            message: "Academic post and all associated data deleted successfully." 
+        });
+
+    } catch (error) {
+        console.error("Error deleting academic post:", error);
         return response.status(500).json({ message: "Internal Server Error" });
     }
 };
