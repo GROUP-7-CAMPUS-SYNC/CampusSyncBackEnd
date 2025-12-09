@@ -8,14 +8,14 @@ export const getHomeFeed = async (request, response) => {
         // We use .lean() to convert Mongoose documents to plain JS objects so we can modify them easily (add feedType)
         const [reports, events, academics] = await Promise.all([
             ReportItem.find()
-                .populate("postedBy", "firstname lastname profileLink")
+                .populate("postedBy", "firstname lastname profileLink email")
                 .populate("comments.user", "firstname lastname profileLink")
 
                 .sort({ createdAt: -1 })
                 .lean(),
             
             Event.find()
-                .populate("postedBy", "firstname lastname")
+                .populate("postedBy", "firstname lastname email")
                 .populate("organization", "organizationName profileLink")
                 .populate("comments.user", "firstname lastname profileLink")
 
@@ -23,7 +23,7 @@ export const getHomeFeed = async (request, response) => {
                 .lean(),
 
             Academic.find()
-                .populate("postedBy", "firstname lastname")
+                .populate("postedBy", "firstname lastname email")
                 .populate("organization", "organizationName profileLink")
                 .populate("comments.user", "firstname lastname profileLink")
 

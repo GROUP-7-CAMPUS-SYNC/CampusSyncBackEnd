@@ -85,7 +85,7 @@ export const getAllReportItems = async (request, response) => {
         // 2. Fetch data (use .lean() for performance)
         const allReportItems = await ReportItem.find(query)
             .sort({ createdAt: -1 })
-            .populate("postedBy", "firstname lastname profileLink")
+            .populate("postedBy", "firstname lastname profileLink email")
             .populate("comments.user", "firstname lastname profileLink")
             .lean(); 
 
