@@ -25,7 +25,7 @@ export const performGlobalSearch = async (request, response) => {
                 ]
             })
             .sort({ createdAt: -1 })
-            .populate("postedBy", "firstname lastname profileLink")
+            .populate("postedBy", "firstname lastname profileLink email")
             .populate("organization", "organizationName profileLink")
             .populate("comments.user", "firstname lastname profileLink")
             .lean(), 
@@ -38,7 +38,7 @@ export const performGlobalSearch = async (request, response) => {
                 ]
             })
             .sort({ createdAt: -1 })
-            .populate("postedBy", "firstname lastname profileLink")
+            .populate("postedBy", "firstname lastname profileLink email")
             .populate("organization", "organizationName profileLink")
             .populate("comments.user", "firstname lastname profileLink")
 
@@ -53,7 +53,7 @@ export const performGlobalSearch = async (request, response) => {
                 ]
             })
             .sort({ createdAt: -1 })
-            .populate("postedBy", "firstname lastname profileLink")
+            .populate("postedBy", "firstname lastname profileLink email")
             .populate("comments.user", "firstname lastname profileLink")
             .lean()
         ]);

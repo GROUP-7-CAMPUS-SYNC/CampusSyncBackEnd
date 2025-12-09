@@ -7,6 +7,8 @@ const setupEventReminders = () => {
     // Run every minute
     cron.schedule('* * * * *', async () => {
         try {
+
+            console.log("1 minute")
             const now = new Date();
             const oneHourLater = new Date(now);
             oneHourLater.setHours(now.getHours() + 1);
@@ -24,11 +26,18 @@ const setupEventReminders = () => {
                 }
             }).select("_id eventName location postedBy organization");
 
+            console.log("sadsad")
+
             if (startingEvents.length === 0) return;
+
+            console.log(startingEvents.length)
+            console.log("asd")
 
             // 2. CHECK FOR SUBSCRIBERS FOR THESE EVENTS
             for (const event of startingEvents) {
                 
+
+                console.log("qwe1qwe")
                 // Query the SEPARATE model
                 const subscribers = await EventSubscriber.find({
                     event: event._id,
@@ -63,6 +72,7 @@ const setupEventReminders = () => {
                     { _id: { $in: subscriberIds } },
                     { $set: { isNotified: true } }
                 );
+                console.log("qwe2qwe")
             }
 
         } catch (error) {
