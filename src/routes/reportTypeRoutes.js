@@ -6,7 +6,8 @@ import {
     addWitness,
     isUserIsWitness,
     getWitnessList,
-    deleteReportItem
+    deleteReportItem,
+    updateReportItem
 } from '../controllers/reportItemController.js';
 import { protect } from '../middleware/authMiddleWare.js';
 
@@ -16,6 +17,8 @@ const router = express.Router();
 router.post('/createPost', protect, createReportItem);
 router.get('/getPosts/reportItems', protect, getAllReportItems);
 router.delete('/delete/:id', protect, deleteReportItem)
+router.put('/update/:id', protect, updateReportItem)
+
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentReportItem);           // Add
