@@ -2,6 +2,8 @@ import Event from "../models/Event.js";
 import Organization from "../models/Organization.js";
 import { notifyOrganizationFollowers } from "../helper/notificationHelper.js"; 
 import EventSubscriber from "../models/EventSubscriber.js";
+import Notification from "../models/Notification.js";
+import SavedItem from "../models/SavedItem.js";
 
 export const getManagedOrganization = async (request, response) => {
     try {
@@ -239,3 +241,60 @@ export const getEventSubscribers = async (request, response) => {
         return response.status(500).json({ message: "Internal Server Error" });
     }
 }
+
+export const deleteEvent = async (request, response) => {
+    try {
+        const { id } = request.params;
+        const userId = request.userRegistrationDetails._id;
+
+        // 1. Find the Event
+        const event = await Event.findById(id);
+
+        if (!event) {
+            return response.status(404).json({ message: "Event not found." });
+        }
+
+        // 2. Authorization Check: Is the user the Organization Head?
+        // We need to fetch the organization attached to the event to check its head ID
+        const organization = await Organization.findById(event.organization);
+
+        if (!organization) {
+            // Edge case: Org was deleted but event remained?
+            // Allow deletion if the user is the one who 'postedBy' the event as a fallback, 
+            // or strictly fail. Here we assume strict org head check.
+            return response.status(404).json({ message: "Organization record not found." });
+        }
+
+        if (organization.organizationHeadID.toString() !== userId.toString()) {
+            return response.status(403).json({ 
+                message: "Unauthorized. Only the Organization Head can delete this event." 
+            });
+        }
+
+        // 3. Cascade Delete: Remove Subscriptions (EventSubscriber)
+        await EventSubscriber.deleteMany({ event: id });
+
+        // 4. Cascade Delete: Remove Notifications related to this event
+        await Notification.deleteMany({ 
+            referenceId: id,
+            referenceModel: "Event"
+        });
+
+        // 5. Cascade Delete: Remove Saved Items
+        await SavedItem.deleteMany({ 
+            post: id, 
+            postModel: "Event" 
+        });
+
+        // 6. Delete the Event itself
+        await Event.findByIdAndDelete(id);
+
+        return response.status(200).json({ 
+            message: "Event and all associated data deleted successfully." 
+        });
+
+    } catch (error) {
+        console.error("Error deleting event:", error);
+        return response.status(500).json({ message: "Internal Server Error" });
+    }
+};

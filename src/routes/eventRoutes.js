@@ -5,7 +5,8 @@ import {
     getAllEventPosts,
     addCommentEvent,
     toggleNotifyEvent,
-    getEventSubscribers
+    getEventSubscribers,
+    deleteEvent
 } from "../controllers/eventControllers.js";
 import { protect } from "../middleware/authMiddleWare.js";
 
@@ -15,6 +16,7 @@ const router = express.Router();
 router.get('/get_managed_organization', protect, getManagedOrganization);
 router.post('/create_post', protect, createPostEvent);
 router.get('/getPosts/event', protect, getAllEventPosts);
+router.delete('/delete/:id', protect, deleteEvent)
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentEvent);           // Add
