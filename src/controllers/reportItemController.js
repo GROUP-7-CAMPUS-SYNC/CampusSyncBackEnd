@@ -1,4 +1,5 @@
 import ReportItem from "../models/reportType.js";
+import SavedItem from "../models/SavedItem.js"; 
 
 export const createReportItem = async (request, response) => {    
     try
@@ -242,5 +243,41 @@ export const getWitnessList = async (request, response) => {
     } catch (error) {
         console.error("Error fetching witness list:", error);
         return response.status(500).json({ message: "Server Error" });
+    }
+};
+
+export const deleteReportItem = async (request, response) => {
+    try {
+        const { id } = request.params;
+        const userId = request.userRegistrationDetails._id;
+
+        // 1. Find the report
+        const report = await ReportItem.findById(id);
+
+        if (!report) {
+            return response.status(404).json({ message: "Report item not found." });
+        }
+
+        // 2. Check Ownership (Security)
+        if (report.postedBy.toString() !== userId.toString()) {
+            return response.status(403).json({ 
+                message: "Unauthorized. You can only delete your own posts." 
+            });
+        }
+
+        // 3. Cascade Delete: Remove this post from everyone's Saved Items
+        await SavedItem.deleteMany({ 
+            post: id, 
+            postModel: "ReportItem" 
+        });
+
+        // 4. Delete the Report itself
+        await ReportItem.findByIdAndDelete(id);
+
+        return response.status(200).json({ message: "Post deleted successfully." });
+
+    } catch (error) {
+        console.error("Error deleting report item:", error);
+        return response.status(500).json({ message: "Internal Server Error" });
     }
 };
