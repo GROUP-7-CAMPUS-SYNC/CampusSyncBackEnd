@@ -281,3 +281,58 @@ export const deleteReportItem = async (request, response) => {
         return response.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+export const updateReportItem = async (request, response) => {
+    try {
+        const { id } = request.params;
+        const userId = request.userRegistrationDetails._id;
+        
+        // 1. Destructure potential updates
+        const {
+            reportType,
+            itemName,
+            description,
+            turnOver,
+            locationDetails,
+            contactDetails,
+            dateLostOrFound,
+            image // This might be the old URL string or a new URL string from Cloudinary
+        } = request.body;
+
+        // 2. Find the existing report
+        const report = await ReportItem.findById(id);
+
+        if (!report) {
+            return response.status(404).json({ message: "Report item not found." });
+        }
+
+        // 3. Check Ownership
+        if (report.postedBy.toString() !== userId.toString()) {
+            return response.status(403).json({ 
+                message: "Unauthorized. You can only update your own posts." 
+            });
+        }
+
+        // 4. Update Fields (Only if provided in body, otherwise keep old value)
+        // Note: For turnOver, we check undefined because empty string is a valid update
+        if(reportType) report.reportType = reportType;
+        if(itemName) report.itemName = itemName;
+        if(description) report.description = description;
+        if(turnOver !== undefined) report.turnOver = turnOver;
+        if(locationDetails) report.locationDetails = locationDetails;
+        if(contactDetails) report.contactDetails = contactDetails;
+        if(dateLostOrFound) report.dateLostOrFound = dateLostOrFound;
+        if(image) report.image = image;
+
+        const updatedReport = await report.save();
+
+        return response.status(200).json({
+            message: "Report updated successfully.",
+            data: updatedReport
+        });
+
+    } catch (error) {
+        console.error("Error updating report item:", error);
+        return response.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};

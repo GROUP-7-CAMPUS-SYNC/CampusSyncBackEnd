@@ -124,7 +124,14 @@ export const getAllEventPosts = async (request, response) => {
         const post = await Event.find(query)
             .sort({ createdAt: -1 })
             .populate("postedBy", "firstname lastname")
-            .populate("organization", "organizationName profileLink")
+            .populate({
+                path: "organization",
+                select: "organizationName profileLink organizationHeadID",
+                populate: {
+                    path: "organizationHeadID",
+                    select: "email"
+                }
+            })
             .populate("comments.user", "firstname lastname profileLink");
 
         if(post.length !== 0){
@@ -296,5 +303,61 @@ export const deleteEvent = async (request, response) => {
     } catch (error) {
         console.error("Error deleting event:", error);
         return response.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const updateEvent = async (request, response) => {
+    try {
+        const { id } = request.params;
+        const userId = request.userRegistrationDetails._id;
+
+        const {
+            eventName,
+            location,
+            course,
+            openTo,
+            startDate,
+            endDate,
+            image 
+        } = request.body;
+
+        // A. Find Event
+        const event = await Event.findById(id);
+        if (!event) {
+            return response.status(404).json({ message: "Event not found." });
+        }
+
+        // B. Find Organization
+        const organization = await Organization.findById(event.organization);
+        if (!organization) {
+            return response.status(404).json({ message: "Organization record not found." });
+        }
+
+        // C. STRICT SECURITY CHECK: Is user the Head?
+        if (organization.organizationHeadID.toString() !== userId.toString()) {
+            return response.status(403).json({ 
+                message: "Unauthorized. You must be the current Organization Head to update this event." 
+            });
+        }
+
+        // D. Update Fields
+        event.eventName = eventName || event.eventName;
+        event.location = location || event.location;
+        event.course = course || event.course;
+        event.openTo = openTo || event.openTo;
+        event.startDate = startDate || event.startDate;
+        event.endDate = endDate || event.endDate;
+        event.image = image || event.image;
+
+        const updatedEvent = await event.save();
+
+        return response.status(200).json({
+            message: "Event updated successfully.",
+            data: updatedEvent
+        });
+
+    } catch (error) {
+        console.error("Error updating event:", error);
+        return response.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
