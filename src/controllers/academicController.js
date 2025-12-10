@@ -126,8 +126,15 @@ export const getAllAcademicPosts = async (request, response) => {
         // Fetch all posts, sorted by newest first
         const posts = await Academic.find(query)
             .sort({ createdAt: -1 }) // Descending order
-            .populate("postedBy", "firstname lastname") // Get author name
-            .populate("organization", "organizationName profileLink") // Get org details
+            .populate("postedBy", "firstname lastname")
+            .populate({
+                path: "organization",
+                select: "organizationName profileLink organizationHeadID",
+                populate: {
+                    path: "organizationHeadID",
+                    select: "email"
+                }
+            })
             .populate("comments.user", "firstname lastname profileLink");
 
         return response.status(200).json(posts);
@@ -219,5 +226,53 @@ export const deleteAcademicPost = async (request, response) => {
     } catch (error) {
         console.error("Error deleting academic post:", error);
         return response.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const updateAcademicPost = async (request, response) => {
+    try {
+        const { id } = request.params;
+        const user = request.userRegistrationDetails;
+
+        const {
+            title,
+            content,
+            image // Could be new URL or old URL
+        } = request.body;
+
+        // 1. Find the Post
+        const post = await Academic.findById(id);
+        if (!post) {
+            return response.status(404).json({ message: "Academic post not found." });
+        }
+
+        // 2. Find the Organization linked to this post
+        const organization = await Organization.findById(post.organization);
+        if (!organization) {
+            return response.status(404).json({ message: "Associated Organization not found." });
+        }
+
+        // 3. Authorization Check: Is the requester the Organization Head?
+        if (organization.organizationHeadID.toString() !== user._id.toString()) {
+            return response.status(403).json({ 
+                message: "Unauthorized. Only the Organization Head can update this post." 
+            });
+        }
+
+        // 4. Update Fields (Only if provided)
+        post.title = title || post.title;
+        post.content = content || post.content;
+        post.image = image || post.image;
+
+        const updatedPost = await post.save();
+
+        return response.status(200).json({
+            message: "Academic post updated successfully.",
+            data: updatedPost
+        });
+
+    } catch (error) {
+        console.error("Error updating academic post:", error);
+        return response.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
