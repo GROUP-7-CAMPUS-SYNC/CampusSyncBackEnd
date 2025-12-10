@@ -6,7 +6,8 @@ import {
     addCommentEvent,
     toggleNotifyEvent,
     getEventSubscribers,
-    deleteEvent
+    deleteEvent,
+    updateEvent
 } from "../controllers/eventControllers.js";
 import { protect } from "../middleware/authMiddleWare.js";
 
@@ -17,6 +18,7 @@ router.get('/get_managed_organization', protect, getManagedOrganization);
 router.post('/create_post', protect, createPostEvent);
 router.get('/getPosts/event', protect, getAllEventPosts);
 router.delete('/delete/:id', protect, deleteEvent)
+router.put('/update/:id', protect, updateEvent)
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentEvent);           // Add
