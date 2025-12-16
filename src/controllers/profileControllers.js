@@ -18,7 +18,14 @@ export const getUserPosts = async (request, response) => {
 
             Event.find({ postedBy: userId })
                 .populate("postedBy", "firstname lastname email")
-                .populate("organization", "organizationName profileLink")
+                .populate({
+                    path: "organization",
+                    select: "organizationName profileLink",
+                    populate: {
+                        path: "organizationHeadID",
+                        select: "email"
+                    }
+                })
                 .populate("comments.user", "firstname lastname profileLink")
 
                 .sort({ createdAt: -1 })
@@ -26,7 +33,14 @@ export const getUserPosts = async (request, response) => {
 
             Academic.find({ postedBy: userId })
                 .populate("postedBy", "firstname lastname email")
-                .populate("organization", "organizationName profileLink")
+                .populate({
+                    path: "organization",
+                    select: "organizationName profileLink",
+                    populate: {
+                        path: "organizationHeadID",
+                        select: "email"
+                    }
+                })
                 .populate("comments.user", "firstname lastname profileLink")
 
                 .sort({ createdAt: -1 })

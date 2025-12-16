@@ -1,61 +1,61 @@
 import Organization from "../models/Organization.js"; // Organization Model
 import User from "../models/User.js";
-import mongoose from "mongoose"; 
+import mongoose from "mongoose";
 
 
 // DATA TO SEED
 const ORGANIZATION_DATA = [
     // BS Civil Engineering
-    { 
-        organizationName: "Structural Innovators", 
-        course: "BS Civil Engineering", 
-        description: "Premier organization for structural analysis and design enthusiasts.", 
+    {
+        organizationName: "Structural Innovators",
+        course: "BS Civil Engineering",
+        description: "Premier organization for structural analysis and design enthusiasts.",
         // Head: Emilio Aguinaldo
-        organizationHeadID: "6922d0a91e4076e8453c5698", 
+        organizationHeadID: "6922d0a91e4076e8453c5698",
         // Moderator: Gabriela Silang
         moderators: "6922d08d1e4076e8453c5695"
     },
     // BS Civil Engineering
-    { 
-        organizationName: "Building Innovators", 
-        course: "BS Civil Engineering", 
-        description: "Premier organization for structural analysis and design enthusiasts.", 
+    {
+        organizationName: "Building Innovators",
+        course: "BS Civil Engineering",
+        description: "Premier organization for structural analysis and design enthusiasts.",
         // Head: Emilio Aguinaldo
-        organizationHeadID: "6922d0a91e4076e8453c5698", 
+        organizationHeadID: "6922d0a91e4076e8453c5698",
         // Moderator: Gabriela Silang
         moderators: "6922d08d1e4076e8453c5695"
     },
 
 
     // BS Information Technology
-    { 
-        organizationName: "NetAdmin Squad", 
-        course: "BS Information Technology", 
-        description: "Network administration, security, and cloud infrastructure.", 
+    {
+        organizationName: "NetAdmin Squad",
+        course: "BS Information Technology",
+        description: "Network administration, security, and cloud infrastructure.",
         // Head: Juan DelaCruz
-        organizationHeadID: "6922d00f1e4076e8453c5689", 
+        organizationHeadID: "6922d00f1e4076e8453c5689",
         // Moderator: Gabriela Silang
         moderators: "6922d08d1e4076e8453c5695"
     },
 
     // BS Computer Science
-    { 
-        organizationName: "Algorithm Aces", 
-        course: "BS Computer Science", 
-        description: "Deep dive into data structures, algorithms, and AI.", 
+    {
+        organizationName: "Algorithm Aces",
+        course: "BS Computer Science",
+        description: "Deep dive into data structures, algorithms, and AI.",
         // Head: Jose Rizal
-        organizationHeadID: "6922d0431e4076e8453c568f", 
+        organizationHeadID: "6922d0431e4076e8453c568f",
         // Moderator: Gabriela Silang
         moderators: "6922d08d1e4076e8453c5695"
     },
 
     // BS Food Technology
-    { 
-        organizationName: "Food Safety Net", 
-        course: "BS Food Technology", 
-        description: "Ensuring quality and safety in food production.", 
+    {
+        organizationName: "Food Safety Net",
+        course: "BS Food Technology",
+        description: "Ensuring quality and safety in food production.",
         // Head: Andres Bonifacio
-        organizationHeadID: "6922d07a1e4076e8453c5692", 
+        organizationHeadID: "6922d07a1e4076e8453c5692",
         // Moderator: Gabriela Silang
         moderators: "6922d08d1e4076e8453c5695"
     }
@@ -80,7 +80,7 @@ export const seedOrganizations = async (req, res) => {
             // Update Moderators
             if (org.moderators && org.moderators.length > 0) {
                 await User.updateMany(
-                    { _id: { $in: org.moderators } }, 
+                    { _id: { $in: org.moderators } },
                     { role: "moderator" }
                 );
             }
@@ -89,9 +89,9 @@ export const seedOrganizations = async (req, res) => {
         // Execute all role updates in parallel for performance
         await Promise.all(roleUpdates);
 
-        return res.status(201).json({ 
-            message: "✅ Organizations seeded and User roles updated successfully.", 
-            data: createdOrgs 
+        return res.status(201).json({
+            message: "✅ Organizations seeded and User roles updated successfully.",
+            data: createdOrgs
         });
 
     } catch (error) {
@@ -101,12 +101,11 @@ export const seedOrganizations = async (req, res) => {
 };
 
 export const getOrganizations = async (request, response) => {
-    try 
-    {
+    try {
         const user = request.userRegistrationDetails;
 
-        if(!user || !user.course){
-            return response.status(400).json({ message: "User not found or has no course assigned"});
+        if (!user || !user.course) {
+            return response.status(400).json({ message: "User not found or has no course assigned" });
         }
 
         const userCourse = user.course;
@@ -116,9 +115,9 @@ export const getOrganizations = async (request, response) => {
             .populate("organizationHeadID", "firstname lastname")
             .populate("moderators", "firstname lastname");
 
-        
+
         const currentUser = await User.findById(userId).select("following");
-        
+
         const followedOrgIds = currentUser.following.map(org => org.toString());
 
         const formattedOrganizations = organizations.map(org => {
@@ -142,8 +141,7 @@ export const getOrganizations = async (request, response) => {
             .json(formattedOrganizations)
 
     }
-    catch(error)
-    {
+    catch (error) {
         console.error("Error fetching suggestions (Organization Controllers) [getOrganizations]: ", error);
         return response
             .status(500)
@@ -152,13 +150,12 @@ export const getOrganizations = async (request, response) => {
 }
 
 export const toggleFollowOrganization = async (request, response) => {
-    try
-    {
+    try {
         const { organizationID } = request.params;
         const userId = request.userRegistrationDetails._id;
 
         // Validate ID format to prevent crashes
-        if(!mongoose.Types.ObjectId.isValid(organizationID)){
+        if (!mongoose.Types.ObjectId.isValid(organizationID)) {
             return response
                 .status(400)
                 .json({ message: "Invalid organization ID" });
@@ -174,8 +171,7 @@ export const toggleFollowOrganization = async (request, response) => {
         // 2. Toggle
         let updateOrg
 
-        if(isFollowing)
-        {
+        if (isFollowing) {
             // Unfollow logic 
             // Remove org ID from user's following list 
             await User.findByIdAndUpdate(userId, {
@@ -197,8 +193,7 @@ export const toggleFollowOrganization = async (request, response) => {
                 })
 
         }
-        else
-        {
+        else {
             // Follow Logic 
             // Add org ID to user's following list (addToSet prevent duplicates)
             await User.findByIdAndUpdate(userId, {
@@ -207,7 +202,7 @@ export const toggleFollowOrganization = async (request, response) => {
 
             // Increment
             updateOrg = await Organization.findByIdAndUpdate(organizationID, {
-                $inc: {members: 1}
+                $inc: { members: 1 }
             }, { new: true })
 
             return response
@@ -219,8 +214,7 @@ export const toggleFollowOrganization = async (request, response) => {
                 })
         }
     }
-    catch(error)
-    {
+    catch (error) {
         console.error("Error toggling follow (Organization Controllers) [toggleFollowOrganization]: ", error);
         return response
             .status(500)
@@ -230,3 +224,33 @@ export const toggleFollowOrganization = async (request, response) => {
             })
     }
 }
+
+
+export const updateOrganizationProfilePicture = async (req, res) => {
+    try {
+        const { organizationId, profileLink } = req.body;
+
+        if (!organizationId || !profileLink) {
+            return res.status(400).json({ message: "Organization ID and profile link are required." });
+        }
+
+        const updatedOrg = await Organization.findByIdAndUpdate(
+            organizationId,
+            { profileLink },
+            { new: true }
+        );
+
+        if (!updatedOrg) {
+            return res.status(404).json({ message: "Organization not found." });
+        }
+
+        return res.status(200).json({
+            message: "Organization profile picture updated successfully",
+            data: updatedOrg
+        });
+
+    } catch (error) {
+        console.error("Error updating organization profile picture:", error);
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};

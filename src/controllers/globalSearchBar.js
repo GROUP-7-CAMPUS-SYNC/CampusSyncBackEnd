@@ -24,11 +24,18 @@ export const performGlobalSearch = async (request, response) => {
                     { course: regex }
                 ]
             })
-            .sort({ createdAt: -1 })
-            .populate("postedBy", "firstname lastname profileLink email")
-            .populate("organization", "organizationName profileLink")
-            .populate("comments.user", "firstname lastname profileLink")
-            .lean(), 
+                .sort({ createdAt: -1 })
+                .populate("postedBy", "firstname lastname profileLink email")
+                .populate({
+                    path: "organization",
+                    select: "organizationName profileLink",
+                    populate: {
+                        path: "organizationHeadID",
+                        select: "email"
+                    }
+                })
+                .populate("comments.user", "firstname lastname profileLink")
+                .lean(),
 
             // 2. Search Academic
             Academic.find({
@@ -37,12 +44,19 @@ export const performGlobalSearch = async (request, response) => {
                     { content: regex }
                 ]
             })
-            .sort({ createdAt: -1 })
-            .populate("postedBy", "firstname lastname profileLink email")
-            .populate("organization", "organizationName profileLink")
-            .populate("comments.user", "firstname lastname profileLink")
+                .sort({ createdAt: -1 })
+                .populate("postedBy", "firstname lastname profileLink email")
+                .populate({
+                    path: "organization",
+                    select: "organizationName profileLink",
+                    populate: {
+                        path: "organizationHeadID",
+                        select: "email"
+                    }
+                })
+                .populate("comments.user", "firstname lastname profileLink")
 
-            .lean(),
+                .lean(),
 
             // 3. Search Report Items (Lost & Found)
             ReportItem.find({
@@ -52,10 +66,10 @@ export const performGlobalSearch = async (request, response) => {
                     { locationDetails: regex }
                 ]
             })
-            .sort({ createdAt: -1 })
-            .populate("postedBy", "firstname lastname profileLink email")
-            .populate("comments.user", "firstname lastname profileLink")
-            .lean()
+                .sort({ createdAt: -1 })
+                .populate("postedBy", "firstname lastname profileLink email")
+                .populate("comments.user", "firstname lastname profileLink")
+                .lean()
         ]);
 
         // Add 'feedType' identifier to each item so the frontend knows which component to render
