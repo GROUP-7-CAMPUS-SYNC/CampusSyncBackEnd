@@ -13,10 +13,17 @@ export const getHomeFeed = async (request, response) => {
 
                 .sort({ createdAt: -1 })
                 .lean(),
-            
+
             Event.find()
                 .populate("postedBy", "firstname lastname email")
-                .populate("organization", "organizationName profileLink")
+                .populate({
+                    path: "organization",
+                    select: "organizationName profileLink",
+                    populate: {
+                        path: "organizationHeadID",
+                        select: "email"
+                    }
+                })
                 .populate("comments.user", "firstname lastname profileLink")
 
                 .sort({ createdAt: -1 })
@@ -24,7 +31,14 @@ export const getHomeFeed = async (request, response) => {
 
             Academic.find()
                 .populate("postedBy", "firstname lastname email")
-                .populate("organization", "organizationName profileLink")
+                .populate({
+                    path: "organization",
+                    select: "organizationName profileLink",
+                    populate: {
+                        path: "organizationHeadID",
+                        select: "email"
+                    }
+                })
                 .populate("comments.user", "firstname lastname profileLink")
 
                 .sort({ createdAt: -1 })
@@ -45,9 +59,9 @@ export const getHomeFeed = async (request, response) => {
 
     } catch (error) {
         console.error("Error fetching home feed:", error);
-        return response.status(500).json({ 
-            message: "Internal Server Error fetching Home Feed", 
-            error: error.message 
+        return response.status(500).json({
+            message: "Internal Server Error fetching Home Feed",
+            error: error.message
         });
     }
 };

@@ -29,9 +29,9 @@ export const toggleSavePost = async (request, response) => {
         if (existingSave) {
             // -- UNSAVE LOGIC --
             await SavedItem.findByIdAndDelete(existingSave._id);
-            return response.status(200).json({ 
-                message: "Post unsaved successfully", 
-                isSaved: false 
+            return response.status(200).json({
+                message: "Post unsaved successfully",
+                isSaved: false
             });
         } else {
             // -- SAVE LOGIC --
@@ -43,9 +43,9 @@ export const toggleSavePost = async (request, response) => {
                 postModel: type
             });
 
-            return response.status(201).json({ 
-                message: "Post saved successfully", 
-                isSaved: true 
+            return response.status(201).json({
+                message: "Post saved successfully",
+                isSaved: true
             });
         }
 
@@ -62,7 +62,7 @@ export const getSavedPosts = async (request, response) => {
         // 1. Get all Saved Items for this user first
         // We only need the 'post' ID and the 'postModel' type
         const savedItems = await SavedItem.find({ user: userId })
-            .select("post postModel") 
+            .select("post postModel")
             .lean();
 
         if (!savedItems.length) {
@@ -90,13 +90,27 @@ export const getSavedPosts = async (request, response) => {
 
             Event.find({ _id: { $in: eventIds } })
                 .populate("postedBy", "firstname lastname")
-                .populate("organization", "organizationName profileLink") // Safe here
+                .populate({
+                    path: "organization",
+                    select: "organizationName profileLink",
+                    populate: {
+                        path: "organizationHeadID",
+                        select: "email"
+                    }
+                }) // Safe here
                 .populate("comments.user", "firstname lastname profileLink")
                 .lean(),
 
             Academic.find({ _id: { $in: academicIds } })
                 .populate("postedBy", "firstname lastname")
-                .populate("organization", "organizationName profileLink") // Safe here
+                .populate({
+                    path: "organization",
+                    select: "organizationName profileLink",
+                    populate: {
+                        path: "organizationHeadID",
+                        select: "email"
+                    }
+                }) // Safe here
                 .populate("comments.user", "firstname lastname profileLink")
                 .lean()
         ]);
@@ -116,9 +130,9 @@ export const getSavedPosts = async (request, response) => {
 
     } catch (error) {
         console.error("Error fetching saved posts (Saved Controller):", error);
-        return response.status(500).json({ 
-            message: "Internal Server Error", 
-            error: error.message 
+        return response.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
         });
     }
 };
@@ -140,8 +154,8 @@ export const checkSavedStatus = async (request, response) => {
         });
 
         // Return boolean status (!! converts object to true, null to false)
-        return response.status(200).json({ 
-            isSaved: !!existingSave 
+        return response.status(200).json({
+            isSaved: !!existingSave
         });
 
     } catch (error) {
