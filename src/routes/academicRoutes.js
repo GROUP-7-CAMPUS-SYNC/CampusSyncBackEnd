@@ -7,6 +7,11 @@ import {
     deleteAcademicPost,
     updateAcademicPost
 } from "../controllers/academicController.js";
+
+import {
+    updateAcademicComment,
+    deleteAcademicComment
+} from "../controllers/commentController.js"
 import { protect } from "../middleware/authMiddleWare.js";
 
 const router = express.Router();
@@ -21,5 +26,6 @@ router.put('/update/:id', protect, updateAcademicPost)
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentAcademic);           // Add
-
+router.put('/:postId/comments/:commentId', protect, updateAcademicComment); 
+router.delete('/:postId/comments/:commentId', protect, deleteAcademicComment); 
 export default router;
