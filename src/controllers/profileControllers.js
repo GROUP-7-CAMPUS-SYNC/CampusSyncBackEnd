@@ -1,6 +1,7 @@
 import ReportItem from "../models/reportType.js";
 import Event from "../models/Event.js";
 import Academic from "../models/Academic.js";
+import User from "../models/User.js";
 
 export const getUserPosts = async (request, response) => {
     try {
@@ -46,9 +47,42 @@ export const getUserPosts = async (request, response) => {
 
     } catch (error) {
         console.error("Error fetching user posts (Profile Controller):", error);
-        return response.status(500).json({ 
-            message: "Internal Server Error fetching user profile posts", 
-            error: error.message 
+        return response.status(500).json({
+            message: "Internal Server Error fetching user profile posts",
+            error: error.message
+        });
+    }
+};
+
+export const updateProfilePicture = async (request, response) => {
+    try {
+        const userId = request.userRegistrationDetails._id;
+        const { profileLink } = request.body;
+
+        if (!profileLink) {
+            return response.status(400).json({ message: "Profile link is required" });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { profileLink },
+            { new: true }
+        ).select("-password");
+
+        if (!updatedUser) {
+            return response.status(404).json({ message: "User not found" });
+        }
+
+        return response.status(200).json({
+            message: "Profile picture updated successfully",
+            user: updatedUser
+        });
+
+    } catch (error) {
+        console.error("Error updating profile picture:", error);
+        return response.status(500).json({
+            message: "Internal Server Error updating profile picture",
+            error: error.message
         });
     }
 };
