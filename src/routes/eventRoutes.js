@@ -9,6 +9,11 @@ import {
     deleteEvent,
     updateEvent
 } from "../controllers/eventControllers.js";
+
+import {
+    updateEventComment,
+    deleteEventComment
+} from "../controllers/commentController.js"
 import { protect } from "../middleware/authMiddleWare.js";
 
 const router = express.Router();
@@ -22,7 +27,8 @@ router.put('/update/:id', protect, updateEvent)
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentEvent);           // Add
-
+router.put('/:postId/comments/:commentId', protect, updateEventComment);
+router.delete('/:postId/comments/:commentId', protect, deleteEventComment); 
 
 // Toggle Notify Me Routes
 router.put('/toggle_notify/:id', protect, toggleNotifyEvent);

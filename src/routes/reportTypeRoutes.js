@@ -9,6 +9,12 @@ import {
     deleteReportItem,
     updateReportItem
 } from '../controllers/reportItemController.js';
+
+import { 
+    updateReportComment, 
+    deleteReportComment 
+} from "../controllers/commentController.js";
+
 import { protect } from '../middleware/authMiddleWare.js';
 
 const router = express.Router();
@@ -22,8 +28,8 @@ router.put('/update/:id', protect, updateReportItem)
 
 // Comment Routes
 router.post('/:id/comments', protect, addCommentReportItem);           // Add
-// router.get('/:id/comments', protect, getCommentsReportItem);           // Read
-
+router.put('/:postId/comments/:commentId', protect, updateReportComment); 
+router.delete('/:postId/comments/:commentId', protect, deleteReportComment); 
 
 // Witness Routes
 router.post('/:id/witnesses', protect, addWitness);
