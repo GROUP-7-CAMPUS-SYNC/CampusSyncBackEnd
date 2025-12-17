@@ -8,6 +8,7 @@ We have prepared comprehensive documentation for the backend structure and logic
 
 *   **[Entry Point & Server Setup](./docs/technical/Entry.md)**: Overview of `index.js`.
 *   **[Environment Variables](./docs/Environment.md)**: Configuration guide.
+*   **[Deployment Guide](./docs/technical/Deployment.md)**: Instructions for deploying to Render.
 *   **[API Routes](./docs/technical/Routes.md)**: Detailed list of API endpoints.
 *   **[Controllers](./docs/technical/Controllers.md)**: Business logic explanation.
 *   **[Database Models](./docs/technical/Models.md)**: Mongoose schemas and data structures.
