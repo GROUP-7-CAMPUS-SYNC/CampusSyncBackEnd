@@ -2,6 +2,17 @@
 
 The backend service for the CampusSync application, built with Node.js, Express, and MongoDB. This API handles user authentication, data management for organizations/events/academic posts, and real-time features.
 
+## 📚 Documentation
+
+We have prepared comprehensive documentation for the backend structure and logic:
+
+*   **[Entry Point & Server Setup](./docs/technical/Entry.md)**: Overview of `index.js`.
+*   **[Environment Variables](./docs/Environment.md)**: Configuration guide.
+*   **[API Routes](./docs/technical/Routes.md)**: Detailed list of API endpoints.
+*   **[Controllers](./docs/technical/Controllers.md)**: Business logic explanation.
+*   **[Database Models](./docs/technical/Models.md)**: Mongoose schemas and data structures.
+*   **[Middleware](./docs/technical/Middleware.md)**: Authentication and validation.
+
 ## 🚀 Technologies
 
 *   **Runtime**: Node.js
@@ -13,9 +24,8 @@ The backend service for the CampusSync application, built with Node.js, Express,
 
 ## 🛠️ Installation & Setup
 
-1.  **Clone the repository** (if you haven't already):
+1.  **Navigate to the directory**:
     ```bash
-    git clone <repository-url>
     cd CampusSyncBackEnd
     ```
 
@@ -25,7 +35,7 @@ The backend service for the CampusSync application, built with Node.js, Express,
     ```
 
 3.  **Environment Configuration**:
-    Create a `.env` file in the root directory. Add the following variables (example):
+    Create a `.env` file in the root directory (see **[Environment Docs](./docs/Environment.md)**).
     ```env
     PORT=3000
     MONGO_URI=your_mongodb_connection_string
@@ -49,25 +59,28 @@ The backend service for the CampusSync application, built with Node.js, Express,
 
 ```
 src/
-├── controllers/    # Request handlers (logic)
-├── models/         # Database schemas (Mongoose)
-├── routes/         # API route definitions
-├── middleware/     # Auth and validation middleware
-├── helper/         # Utility functions
-├── lib/            # External library configurations
-└── index.js        # Entry point
+├── controllers/    # 🎮 Business logic (Request handlers)
+├── models/         # 🗄️ Database schemas (Mongoose)
+├── routes/         # 🛣️ API route definitions
+├── middleware/     # 🛡️ Auth and validation middleware
+├── helper/         # 🛠️ Utility functions (cron, etc.)
+├── lib/            # 🔌 External configs (DB, Cloudinary)
+└── index.js        # 🏁 Entry point
 ```
 
 ## 🐳 Docker Support
 
 This service includes a `Dockerfile` for containerization.
-To build and run with Docker:
+
+### Build and Run
 ```bash
 docker build -t campussync-backend .
 docker run -p 3000:3000 campussync-backend
 ```
 
 ## 📡 API Overview
+
+For a detailed breakdown, see [Routes](./docs/technical/Routes.md).
 
 *   **/auth**: Login, Register, Registration requests
 *   **/events**: Create, Update, Delete, Get events
