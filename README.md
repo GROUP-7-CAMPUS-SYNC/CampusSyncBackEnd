@@ -23,6 +23,8 @@ We have prepared comprehensive documentation for the backend structure and logic
 *   **[Database Models](./docs/technical/Models.md)**: Mongoose schemas and data structures.
 *   **[Middleware](./docs/technical/Middleware.md)**: Authentication and validation.
 
+[**View Full Documentation**](./docs/ProjectOverview.md)
+
 ## 🚀 Technologies
 
 *   **Runtime**: Node.js
