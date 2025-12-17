@@ -1,212 +1,472 @@
-# 🗄️ Database Collections & Document Structures
+# 🗄️ Database Collections
 
-This section outlines the proposed MongoDB collections for the CampusSync backend. Each entry details the collection's purpose and its corresponding document structure, satisfying the system's requirements for data management.
-
-## 1. Users Collection
-*   **Collection Name**: `users`
-*   **Usage**: Stores all registered user accounts, including Students, Moderators, and Organization Heads. It manages authentication credentials, profile information, and role-based access control.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "firstname": "String (Required, 3-20 chars)",
-      "lastname": "String (Required, 3-20 chars)",
-      "course": "String (Enum: 'BS Civil Engineering', 'BS IT', 'BS CS', 'BS Food Tech')",
-      "email": "String (Required, Unique, Lowercase)",
-      "password": "String (Hashed)",
-      "profileLink": "String (URL to profile image)",
-      "role": "String (Enum: 'user', 'moderator', Default: 'user')",
-      "following": [
-        { "type": "ObjectId", "ref": "Organization" }
-      ],
-      "createdAt": "Date",
-      "updatedAt": "Date"
+## 1. Organizations Collection
+* **Collection Name**: `organizations`
+* **Usage**: Represents student organizations, including identity, head, and approving moderator.
+* **Structure**:
+```javascript
+{
+    organizationName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    description: {
+        type: String,
+        default: ""
+    },
+    profileLink: {
+        type: String,
+        default: ""
+    },
+    course: {
+        type: String,
+        required: true,
+        enum:[ "BS Civil Engineering", "BS Information Technology", "BS Computer Science", "BS Food Technology"]
+    },
+    members: {
+        type: Number,
+        default: 0
+    },
+    // The one who can post on the organization authorized
+    organizationHeadID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    //The one who approved the organization Head
+    moderators: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     }
-    ```
+}
+```
 
-## 2. Organizations Collection
-*   **Collection Name**: `organizations`
-*   **Usage**: Represents the various student organizations within the campus. It holds details such as the organization's identity, the assigned head, and the moderator who approved it.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "organizationName": "String (Required)",
-      "description": "String",
-      "profileLink": "String (URL to logo)",
-      "course": "String (Enum of courses)",
-      "members": "Number (Default: 0)",
-      "organizationHeadID": "ObjectId (Ref: User, Required)",
-      "moderators": "ObjectId (Ref: User, Required)"
-    }
-    ```
-
-## 3. Events Collection
-*   **Collection Name**: `events`
-*   **Usage**: Stores posts specific to campus events (e.g., "General Assembly"). Key for broadcasting scheduled activities with specific dates and locations.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "type": "String (Default: 'event')",
-      "eventName": "String (Required)",
-      "location": "String (Required)",
-      "course": "String (Required)",
-      "openTo": "String (Target audience)",
-      "startDate": "Date (Required)",
-      "endDate": "Date (Required)",
-      "image": "String (URL to banner)",
-      "postedBy": "ObjectId (Ref: User, Required)",
-      "organization": "ObjectId (Ref: Organization, Required)",
-      "comments": [
-        {
-          "user": "ObjectId (Ref: User)",
-          "text": "String",
-          "createdAt": "Date"
+## 2. Events Collection
+* **Collection Name**: `events`
+* **Usage**: Stores campus event posts with scheduled dates and locations.
+* **Structure**:
+```javascript
+{
+    type: {
+        type: String,
+        default: "event"
+    },
+    eventName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    location: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    course:{
+        type: String,
+        required: true,
+    },
+    openTo:{
+        type: String,
+        required: true,
+        trim: true
+    },
+    startDate: {
+        type: Date,
+        required: true
+    },
+    endDate: {
+        type: Date,
+        required: true
+    },
+    image: {
+        type: String,
+        required: true
+    },
+    postedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    organization: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Organization",
+        required: true
+    },
+    comments: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        text: {
+            type: String,
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
         }
-      ],
-      "createdAt": "Date",
-      "updatedAt": "Date"
-    }
-    ```
+    }]
+}, {
+    timestamps: true
+}
+```
 
-## 4. Academic Posts Collection
-*   **Collection Name**: `academics`
-*   **Usage**: Manages academic-related posts, such as resources or announcements. Distinct from events as it focuses on content dissemination rather than gatherings.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "type": "String (Default: 'academic')",
-      "title": "String (Required)",
-      "content": "String (Required)",
-      "image": "String (Required)",
-      "postedBy": "ObjectId (Ref: User, Required)",
-      "organization": "ObjectId (Ref: Organization, Required)",
-      "comments": [
-        {
-          "user": "ObjectId (Ref: User)",
-          "text": "String",
-          "createdAt": "Date"
+## 3. Academic Posts Collection
+* **Collection Name**: `academics`
+* **Usage**: Manages academic resources/announcements. Focuses on content dissemination.
+* **Structure**:
+```javascript
+{
+    type: {
+        type: String,
+        default: "academic"
+    },
+    title: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    content: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    image: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    postedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    organization: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Organization",
+        required: true
+    },
+    comments: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        text: {
+            type: String,
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
         }
-      ],
-      "createdAt": "Date",
-      "updatedAt": "Date"
-    }
-    ```
+    }]
+}, {
+    timestamps: true
+}
+```
 
-## 5. Report Items Collection
-*   **Collection Name**: `reportitems`
-*   **Usage**: Manages "Lost and Found" items. Tracks the status of items, where they were found/lost, and allows for witness verification.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "reportType": "String (Enum: 'Lost', 'Found', Required)",
-      "itemName": "String (Required)",
-      "description": "String (Required)",
-      "turnOver": "String (Default: '')",
-      "locationDetails": "String (Required)",
-      "contactDetails": "String (Required)",
-      "dateLostOrFound": "Date (Required)",
-      "image": "String (Required)",
-      "postedBy": "ObjectId (Ref: User, Required)",
-      "status": "String (Enum: 'active', 'claimed', 'recovered', Default: 'active')",
-      "witnesses": [
-        {
-          "user": "ObjectId (Ref: User)",
-          "vouchTime": "Date"
+## 4. Report Items Collection
+* **Collection Name**: `reportitems`
+* **Usage**: Manages "Lost and Found" items. Tracks status, location, and witnesses.
+* **Structure**:
+```javascript
+{
+    reportType: {
+        type: String,
+        required: true,
+        enum: ["Lost", "Found"]
+    },
+    itemName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    description: {
+        type: String,
+        required: true,
+    },
+    turnOver: {
+        type: String,
+        default: ""
+    },
+    locationDetails: {
+        type: String,
+        required: true
+    },
+    contactDetails: {
+        type: String,
+        required: true
+    },
+    dateLostOrFound: {
+        type: Date,
+        required: true
+    },
+    image: {
+        type: String,
+        required: true
+    },
+    postedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ["active", "claimed", "recovered"],
+        default: "active"
+    },
+    witnesses: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        vouchTime: {
+            type: Date,
+            default: Date.now
         }
-      ],
-      "comments": [
-        {
-          "user": "ObjectId (Ref: User)",
-          "text": "String",
-          "createdAt": "Date"
+    }],
+    comments: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        text: {
+            type: String,
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
         }
-      ],
-      "createdAt": "Date",
-      "updatedAt": "Date"
-    }
-    ```
+    }]
+},
+{
+    timestamps: true
+}
+```
+
+## 5. Users Collection
+* **Collection Name**: `users`
+* **Usage**: Stores all registered user accounts (Students and  Moderators). Manages auth, profiles, and RBAC.
+* **Structure**:
+```javascript
+{
+    firstname: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 3,
+        maxlength: 20
+    },
+    lastname: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 3,
+        maxlength: 20
+    },
+    course: {
+        type: String,
+        required: true,
+        trim: true,
+        enum: [
+            "BS Civil Engineering",
+            "BS Information Technology",
+            "BS Computer Science",
+            "BS Food Technology"
+        ]
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+        lowercase: true,    
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 6        
+    },
+    profileLink: {
+        type: String,
+        default: ""  
+    },
+    role: {
+        type: String,
+        enum: ["user", "moderator"],
+        default: "user"
+    },
+    following:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Organization"
+    }],
+},
+{
+    timestamps: true
+}
+```
 
 ## 6. Messages Collection
-*   **Collection Name**: `messages`
-*   **Usage**: Facilitates direct communication between users, primarily for inquiries regarding report item posts.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "sender": "ObjectId (Ref: User, Required)",
-      "receiver": "ObjectId (Ref: User, Required)",
-      "messageText": "String (Required)",
-      "isRead": "Boolean (Default: false)",
-      "createdAt": "Date",
-      "updatedAt": "Date"
+* **Collection Name**: `messages`
+* **Usage**: Direct user-to-user communication.
+* **Structure**:
+```javascript
+{
+    sender: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    receiver: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    messageText: {
+        type: String,
+        required: true
+    },
+    isRead: {
+        type: Boolean,
+        default: false
     }
-    ```
+},
+{
+    timestamps: true
+}
+```
 
 ## 7. Notifications Collection
-*   **Collection Name**: `notifications`
-*   **Usage**: Tracks system alerts for users (new posts).
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "recipient": "ObjectId (Ref: User, Required)",
-      "sender": "ObjectId (Ref: User)",
-      "organization": "ObjectId (Ref: Organization)",
-      "type": "String (Enum: 'NEW_POST', 'MENTION', 'SYSTEM')",
-      "referenceId": "ObjectId (RefPath: referenceModel)",
-      "referenceModel": "String (Enum: 'Event', 'Academic', 'ReportItem')",
-      "message": "String (Required)",
-      "isRead": "Boolean (Default: false)",
-      "createdAt": "Date",
-      "updatedAt": "Date"
+* **Collection Name**: `notifications`
+* **Usage**: Tracks system alerts (new posts, event reminder).
+* **Structure**:
+```javascript
+{
+    // The user receiving the notification
+    recipient: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    // The entity triggering the notification (User or Org)
+    sender: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
+    // Optional: If the notification comes from an Organization (for "New Post" types)
+    organization: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Organization"
+    },
+    type: {
+        type: String,
+        enum: ["NEW_POST", "MENTION", "SYSTEM"],
+        required: true
+    },
+    referenceId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: 'referenceModel'
+    },
+    referenceModel: {
+        type: String,
+        required: true,
+        enum: ["Event", "Academic", "ReportItem"]
+    },
+    message: {
+        type: String,
+        required: true
+    },
+    isRead: {
+        type: Boolean,
+        default: false
     }
-    ```
+},
+{
+    timestamps: true
+}
+```
 
 ## 8. Event Subscribers Collection
-*   **Collection Name**: `eventsubscribers`
-*   **Usage**: Tracks users who have opted-in to receive specific reminders for an event. Ensures users don't subscribe to the same event twice.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "event": "ObjectId (Ref: Event, Required)",
-      "user": "ObjectId (Ref: User, Required)",
-      "isNotified": "Boolean (Default: false)",
-      "createdAt": "Date",
-      "updatedAt": "Date"
+* **Collection Name**: `eventsubscribers`
+* **Usage**: Tracks users subscribed to event reminders.
+* **Structure**:
+```javascript
+{
+    event: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Event",
+        required: true
+    },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    isNotified: {
+        type: Boolean,
+        default: false
     }
-    ```
+},
+{
+    timestamps: true
+}
+```
 
 ## 9. Saved Items Collection
-*   **Collection Name**: `saveditems`
-*   **Usage**: Stores references to posts that a user has bookmarked for later access. Supports polymorphic references to different post types.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "user": "ObjectId (Ref: User, Required)",
-      "post": "ObjectId (RefPath: postModel, Required)",
-      "postModel": "String (Enum: 'Academic', 'Event', 'ReportItem', Required)",
-      "createdAt": "Date",
-      "updatedAt": "Date"
+* **Collection Name**: `saveditems`
+* **Usage**: Stores user bookmarks via polymorphic references.
+* **Structure**:
+```javascript
+{
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    post: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: 'postModel'
+    },
+    postModel: {
+        type: String,
+        required: true,
+        enum: ['Academic', 'Event', 'ReportItem']
     }
-    ```
+}, {
+    timestamps: true
+}
+```
 
 ## 10. Search History Collection
-*   **Collection Name**: `searchhistories`
-*   **Usage**: Logs recent search queries for individual users to provide "Recent Search" functionality.
-*   **Document Structure**:
-    ```javascript
-    {
-      "_id": "ObjectId",
-      "user": "ObjectId (Ref: User, Required)",
-      "queryText": "String (Required, Lowercase)",
-      "searchContext": "String (Enum: 'global', 'event', 'academic', 'lostfound', Required)",
-      "createdAt": "Date",
-      "updatedAt": "Date"
+* **Collection Name**: `searchhistories`
+* **Usage**: Logs recent user search queries.
+* **Structure**:
+```javascript
+{
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    queryText: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true // Store lowercase to prevent "React" and "react" duplicates
+    },
+    // Keeps track of WHERE they searched
+    searchContext: {
+        type: String,
+        enum: ["global", "event", "academic", "lostfound"],
+        required: true
     }
-    ```
+},
+{
+    timestamps: true
+}
+```
