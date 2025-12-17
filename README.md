@@ -1,6 +1,15 @@
 # CampusSync Backend
 
+<div align="center">
+  <img src="./public/WebsiteLogoWhiteBackGround.png" alt="CampusSync Logo" width="50%" />
+</div>
+
 The backend service for the CampusSync application, built with Node.js, Express, and MongoDB. This API handles user authentication, data management for organizations/events/academic posts, and real-time features.
+
+## 🌐 Live Demo
+
+*   **Frontend**: [CampusSync Frontend](https://campussyncfrontend.onrender.com)
+*   **Backend API**: [CampusSync Backend](https://campussyncbackend-ybn0.onrender.com)
 
 ## 📚 Documentation
 
@@ -59,14 +68,23 @@ We have prepared comprehensive documentation for the backend structure and logic
 ## 📂 Project Structure
 
 ```
-src/
-├── controllers/    # 🎮 Business logic (Request handlers)
-├── models/         # 🗄️ Database schemas (Mongoose)
-├── routes/         # 🛣️ API route definitions
-├── middleware/     # 🛡️ Auth and validation middleware
-├── helper/         # 🛠️ Utility functions (cron, etc.)
-├── lib/            # 🔌 External configs (DB, Cloudinary)
-└── index.js        # 🏁 Entry point
+backend/
+├── docs/               # 📚 Comprehensive Project Documentation
+│   ├── technical/      # Systems, Architecture, & Component docs
+│   ├── Environment.md  # Configuration Guide
+│   └── ...
+├── src/
+│   ├── controllers/    # 🎮 Business logic (Request handlers)
+│   ├── helper/         # �️ Utility functions (Cron jobs, etc.)
+│   ├── lib/            # � External configurations (DB, Cloudinary)
+│   ├── middleware/     # 🛡️ Auth and validation middleware
+│   ├── models/         # 🗄️ Database schemas (Mongoose)
+│   ├── routes/         # �️ API route definitions
+│   └── index.js        # 🏁 Application Entry Point
+├── .env                # Environment variables
+├── Dockerfile          # 🐳 Docker configuration
+├── package.json        # Dependencies & Scripts
+└── ...
 ```
 
 ## 🐳 Docker Support
