@@ -1,6 +1,15 @@
 # CampusSync Backend
 
+<div align="center">
+  <img src="./public/WebsiteLogoWhiteBackGround.png" alt="CampusSync Logo" width="50%" />
+</div>
+
 The backend service for the CampusSync application, built with Node.js, Express, and MongoDB. This API handles user authentication, data management for organizations/events/academic posts, and real-time features.
+
+## 🌐 Live Demo
+
+*   **Frontend**: [CampusSync Frontend](https://campussyncfrontend.onrender.com)
+*   **Backend API**: [CampusSync Backend](https://campussyncbackend-ybn0.onrender.com)
 
 ## 📚 Documentation
 
