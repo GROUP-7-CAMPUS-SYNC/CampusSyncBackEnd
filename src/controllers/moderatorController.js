@@ -3,19 +3,18 @@ import User from "../models/User.js";
 import Academic from "../models/Academic.js";
 import Event from "../models/Event.js";
 import Notification from "../models/Notification.js";
-import SavedItem from "../models/SavedItem.js"; 
+import SavedItem from "../models/SavedItem.js";
 export const getAllOrganization = async (request, response) => {
-    const {_id, role} = request.userRegistrationDetails;
-    
-    try
-    {
+    const { _id, role } = request.userRegistrationDetails;
+
+    try {
         const user = await User.findById(_id);
 
-        if(!user){
+        if (!user) {
             return response.status(404).json({ message: "User not found" });
         }
 
-        if(role !== "moderator"){
+        if (role !== "moderator") {
             return response.status(403).json({ message: "Access denied" });
         }
 
@@ -28,8 +27,7 @@ export const getAllOrganization = async (request, response) => {
             .status(200)
             .json(organizations)
 
-    }catch(error)
-    {
+    } catch (error) {
         console.error("Error fetching organizations (Moderator Controllers) [getAllOrganization]: ", error);
         return response
             .status(500)
@@ -47,7 +45,7 @@ export const createOrganization = async (request, response) => {
             organizationHeadID,
             profileLink // Optional field from request
         } = request.body;
-        
+
         // createdBy is derived from the authenticated user (middleware)
         const createdBy = request.userRegistrationDetails;
 
@@ -70,8 +68,8 @@ export const createOrganization = async (request, response) => {
 
         // --- NEW LOGIC: Prevent Moderators from being Heads ---
         if (headUser.role === 'moderator') {
-            return response.status(403).json({ 
-                message: "Conflict of Interest: A Moderator cannot be assigned as an Organization Head." 
+            return response.status(403).json({
+                message: "Conflict of Interest: A Moderator cannot be assigned as an Organization Head."
             });
         }
 
@@ -86,15 +84,15 @@ export const createOrganization = async (request, response) => {
             course,
             organizationHeadID,
             moderators: createdBy._id, // The moderator creating this is the approver
-            profileLink: finalProfileLink, 
+            profileLink: finalProfileLink,
             members: 0       // Default 0 as per schema
         });
 
         await newOrganization.save();
 
-        return response.status(200).json({ 
-            message: "Organization created successfully.", 
-            data: newOrganization 
+        return response.status(200).json({
+            message: "Organization created successfully.",
+            data: newOrganization
         });
 
     } catch (error) {
@@ -106,8 +104,7 @@ export const createOrganization = async (request, response) => {
 }
 
 export const getAllUser = async (request, response) => {
-    try
-    {
+    try {
         const potentialHeadOrganizationUser = await User.find({ role: { $ne: "moderator" } })
             .select("firstname lastname email course profileLink role")
 
@@ -119,12 +116,11 @@ export const getAllUser = async (request, response) => {
             })
 
     }
-    catch(error)
-    {
+    catch (error) {
         console.error("Error fetching users (Moderator Controllers) [getAllUser]: ", error);
-        return response 
+        return response
             .status(500)
-            .json({message: "Internal Server Error (Moderator Controllers) [getAllUser]"});
+            .json({ message: "Internal Server Error (Moderator Controllers) [getAllUser]" });
     }
 }
 
@@ -138,9 +134,9 @@ export const updateOrganizationName = async (request, response) => {
 
         // 1. Duplicate Check (Mandatory Logic)
         // We must check if the name exists on any document EXCEPT the one we are updating
-        const duplicate = await Organization.findOne({ 
+        const duplicate = await Organization.findOne({
             organizationName: organizationName,
-            _id: { $ne: organizationId } 
+            _id: { $ne: organizationId }
         });
 
         if (duplicate) {
@@ -153,8 +149,8 @@ export const updateOrganizationName = async (request, response) => {
             { $set: { organizationName: organizationName } }, // Explicitly set the new name
             { new: true, runValidators: true } // Return the modified document
         )
-        .populate("organizationHeadID", "firstname lastname course email")
-        .populate("moderators", "firstname lastname email");
+            .populate("organizationHeadID", "firstname lastname course email")
+            .populate("moderators", "firstname lastname email");
 
         if (!updatedOrg) {
             return response.status(404).json({ message: "Organization not found." });
@@ -167,37 +163,36 @@ export const updateOrganizationName = async (request, response) => {
 
     } catch (error) {
         console.error("Error updating organization (Moderator Controllers) [updateOrganizationName]: ", error);
-        return response.status(500).json({ 
-            message: "Internal Server Error updating organization.", 
-            error: error.message 
+        return response.status(500).json({
+            message: "Internal Server Error updating organization.",
+            error: error.message
         });
     }
 };
 
 export const updateOrganizationDescription = async (request, response) => {
-    try
-    {
+    try {
         const { organizationId, description } = request.body;
 
-        if(!organizationId || !description){
+        if (!organizationId || !description) {
             return response
                 .status(400)
                 .json({ message: "Organization ID and new Description are required." })
         }
 
         const updateOrg = await Organization.findByIdAndUpdate(organizationId,
-            {$set: {description: description}},
-            { new: true, runValidators: true}
+            { $set: { description: description } },
+            { new: true, runValidators: true }
         )
-        .populate('organizationHeadID', 'firstname lastname course email')
-        .populate('moderators', 'firstname lastname email');
+            .populate('organizationHeadID', 'firstname lastname course email')
+            .populate('moderators', 'firstname lastname email');
 
-        if(!updateOrg){
+        if (!updateOrg) {
             return response
                 .status(404)
                 .json({ message: "Organization not found." })
         }
-        
+
 
         return response
             .status(200)
@@ -206,8 +201,7 @@ export const updateOrganizationDescription = async (request, response) => {
                 data: updateOrg
             })
     }
-    catch(error)
-    {
+    catch (error) {
         console.error("Error updating organization description (Moderator Controllers) [updateOrganizationDescription]: ", error);
         return response
             .status(500)
@@ -235,8 +229,8 @@ export const changeOrganizationHead = async (request, response) => {
 
         // 3. Enforce Role Restrictions (Separation of Duties)
         if (newHeadUser.role === 'moderator') {
-            return response.status(403).json({ 
-                message: "Conflict of Interest: A Moderator cannot be assigned as an Organization Head." 
+            return response.status(403).json({
+                message: "Conflict of Interest: A Moderator cannot be assigned as an Organization Head."
             });
         }
 
@@ -246,8 +240,8 @@ export const changeOrganizationHead = async (request, response) => {
             { $set: { organizationHeadID: newHeadId } },
             { new: true, runValidators: true }
         )
-        .populate("organizationHeadID", "firstname lastname course email profileLink")
-        .populate("moderators", "firstname lastname email");
+            .populate("organizationHeadID", "firstname lastname course email profileLink")
+            .populate("moderators", "firstname lastname email");
 
         if (!updatedOrg) {
             return response.status(404).json({ message: "Organization not found." });
@@ -262,9 +256,9 @@ export const changeOrganizationHead = async (request, response) => {
 
     } catch (error) {
         console.error("Error changing organization head (Moderator Controllers) [changeOrganizationHead]: ", error);
-        return response.status(500).json({ 
-            message: "Internal Server Error changing organization head.", 
-            error: error.message 
+        return response.status(500).json({
+            message: "Internal Server Error changing organization head.",
+            error: error.message
         });
     }
 };
@@ -285,7 +279,11 @@ export const deleteOrganization = async (request, response) => {
             return response.status(404).json({ message: "Organization not found." });
         }
 
-        // 2. CLEANUP: Delete everything associated with this organization
+        // 2. PRE-FETCH: Get IDs of events and academics to delete associated SavedItems
+        const orgEventIds = await Event.find({ organization: organizationId }).distinct('_id');
+        const orgAcademicIds = await Academic.find({ organization: organizationId }).distinct('_id');
+
+        // 3. CLEANUP: Delete everything associated with this organization
         // We use Promise.all to execute all these deletions in parallel for speed.
         await Promise.all([
             // A. Remove this org from all Users' 'following' lists
@@ -303,7 +301,8 @@ export const deleteOrganization = async (request, response) => {
             // D. ✅ NEW: DELETE all Notifications from this organization
             Notification.deleteMany({ organization: organizationId }),
 
-            SavedItem.deleteMany({ 
+            // E. Delete SavedItems associated with the organization's posts
+            SavedItem.deleteMany({
                 $or: [
                     { post: { $in: orgEventIds }, postModel: "Event" },
                     { post: { $in: orgAcademicIds }, postModel: "Academic" }
@@ -314,8 +313,8 @@ export const deleteOrganization = async (request, response) => {
         // 3. Finally, delete the Organization itself
         await Organization.findByIdAndDelete(organizationId);
 
-        return response.status(200).json({ 
-            message: "Organization and all associated data (posts, notifications) deleted successfully." 
+        return response.status(200).json({
+            message: "Organization and all associated data (posts, notifications) deleted successfully."
         });
 
     } catch (error) {
